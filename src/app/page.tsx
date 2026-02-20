@@ -63,36 +63,133 @@ export default function Home() {
       </section>
 
       {/* Brand Identity Section */}
-      <section className="py-24 bg-white border-b border-gray-100">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="max-w-4xl mx-auto text-center">
-            <motion.h2
+      <section className="relative py-32 bg-slate-50 overflow-hidden border-b border-gray-100">
+        {/* Decorative Background Elements */}
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[800px] bg-brand-trust/5 rounded-full blur-3xl -z-10" />
+        <div className="absolute -bottom-40 -right-40 w-[600px] h-[600px] bg-brand-warmth/5 rounded-full blur-3xl -z-10" />
+
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+          <div className="max-w-5xl mx-auto">
+            {/* Top Badge */}
+            <motion.div
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: "-100px" }}
-              transition={{ duration: 0.8 }}
-              className="text-3xl md:text-5xl font-extrabold text-gray-900 mb-8 leading-tight tracking-tight"
+              transition={{ duration: 0.6 }}
+              className="flex justify-center mb-8"
             >
-              우리는 동물을 <span className="text-brand-trust">보호</span>하지 않습니다.<br />
-              새로운 <span className="text-brand-warmth">가족</span>을 찾아줍니다.
+              <span className="px-4 py-1.5 rounded-full bg-white border border-gray-200 text-sm font-semibold text-brand-trust shadow-sm flex items-center gap-2">
+                <span className="w-2 h-2 rounded-full bg-brand-trust animate-pulse" />
+                OUR MISSION
+              </span>
+            </motion.div>
+
+            <motion.h2
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: "-100px" }}
+              transition={{ duration: 1, ease: "easeOut" }}
+              className="text-4xl md:text-6xl font-extrabold text-center text-gray-900 mb-16 leading-tight tracking-tight relative z-10"
+            >
+              <motion.span
+                initial={{ opacity: 0, scale: 0.5 }}
+                whileInView={{ opacity: 0.3, scale: 1 }}
+                viewport={{ once: true }}
+                transition={{ duration: 1, delay: 0.2 }}
+                className="absolute -top-16 -left-12 text-[12rem] text-brand-trust font-serif leading-none select-none"
+              >
+                "
+              </motion.span>
+              상처받은 어제를 지나,<br className="hidden md:block" />
+              사랑받을 <span className="relative inline-block">
+                <span className="relative z-10 text-transparent bg-clip-text bg-gradient-to-r from-brand-warmth to-orange-500">내일</span>
+                <motion.svg
+                  initial={{ pathLength: 0 }}
+                  whileInView={{ pathLength: 1 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 1, delay: 0.8, ease: "easeInOut" }}
+                  className="absolute w-[120%] h-4 -bottom-1 -left-2 text-brand-warmth/40 -z-10"
+                  viewBox="0 0 100 10"
+                  preserveAspectRatio="none"
+                >
+                  <path d="M0 5 Q 50 10 100 5" stroke="currentColor" strokeWidth="4" fill="transparent" strokeLinecap="round" />
+                </motion.svg>
+              </span>을 <span className="text-brand-trust">이어줍니다.</span>
+              <motion.span
+                initial={{ opacity: 0, scale: 0.5 }}
+                whileInView={{ opacity: 0.3, scale: 1 }}
+                viewport={{ once: true }}
+                transition={{ duration: 1, delay: 0.2 }}
+                className="absolute -bottom-16 -right-12 text-[12rem] text-brand-trust font-serif leading-none select-none rotate-180"
+              >
+                "
+              </motion.span>
             </motion.h2>
 
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95 }}
-              whileInView={{ opacity: 1, scale: 1 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.8, delay: 0.2 }}
-              className="w-16 h-1 bg-brand-trust mx-auto mb-10 rounded-full"
-            />
+            {/* Content Cards */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-24 relative z-10">
+              {[
+                {
+                  title: "상처 치유",
+                  desc: "버림받은 상처를 세심하게 어루만지고 몸과 마음의 건강을 회복합니다.",
+                  icon: (
+                    <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path></svg>
+                  ),
+                  bgClass: "bg-gradient-to-br from-brand-trust to-blue-600",
+                  delay: 0.2
+                },
+                {
+                  title: "행동 교정",
+                  desc: "전문 훈련사를 통해 사람과 함께 살아가는 행복한 방법을 배웁니다.",
+                  icon: (
+                    <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>
+                  ),
+                  bgClass: "bg-gradient-to-br from-brand-warmth to-orange-500",
+                  delay: 0.4
+                },
+                {
+                  title: "완벽한 매칭",
+                  desc: "입양자와 아이의 성향을 분석하여 평생을 함께할 수 있는 가족을 찾아줍니다.",
+                  icon: (
+                    <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
+                  ),
+                  bgClass: "bg-gradient-to-br from-gray-700 to-gray-900",
+                  delay: 0.6
+                }
+              ].map((item, idx) => (
+                <motion.div
+                  key={idx}
+                  initial={{ opacity: 0, y: 40 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true, margin: "-50px" }}
+                  transition={{ duration: 0.7, delay: item.delay, ease: "easeOut" }}
+                  whileHover={{ y: -10, scale: 1.02 }}
+                  className="bg-white p-10 rounded-[2.5rem] shadow-xl shadow-brand-trust/5 hover:shadow-2xl hover:shadow-brand-trust/20 transition-all duration-500 border border-gray-100 group relative overflow-hidden flex flex-col items-center text-center z-10"
+                >
+                  <div className="absolute top-0 right-0 p-4 opacity-0 group-hover:opacity-5 transition-opacity duration-500 transform group-hover:scale-150 rotate-12">
+                    {/* Darker shadow icon on hover */}
+                    <svg className="w-48 h-48 text-gray-900" fill="currentColor" viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" /></svg>
+                  </div>
+
+                  <div className={`w-20 h-20 rounded-3xl flex items-center justify-center mb-8 shadow-lg transform group-hover:-translate-y-2 transition-transform duration-500 ${item.bgClass}`}>
+                    {item.icon}
+                  </div>
+                  <h3 className="text-2xl font-bold text-gray-900 mb-4 group-hover:text-brand-trust transition-colors duration-300">{item.title}</h3>
+                  <p className="text-gray-600 font-light leading-relaxed break-keep">
+                    {item.desc}
+                  </p>
+                </motion.div>
+              ))}
+            </div>
 
             <motion.p
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
+              initial={{ opacity: 0 }}
+              whileInView={{ opacity: 1 }}
               viewport={{ once: true }}
-              transition={{ duration: 0.8, delay: 0.3 }}
-              className="text-lg md:text-xl text-gray-600 leading-relaxed font-light break-keep"
+              transition={{ duration: 1, delay: 0.8 }}
+              className="mt-16 text-center text-lg text-gray-500 font-light max-w-2xl mx-auto break-keep"
             >
-              리호밍센터는 단순한 안식처를 넘어, 동물과 사람 모두가 행복해질 수 있는 완벽한 매칭을 추구합니다. 버림받은 상처를 치유하고, 전문적인 행동 교정과 세심한 건강 관리를 통해 아이들이 평생 배려받고 사랑받을 수 있는 진정한 '집'을 찾아주는 것. 그것이 리호밍센터의 유일한 사명이자 존재 이유입니다.
+              단순한 안식처를 넘어, 동물과 사람 모두가 행복해질 수 있는 진정한 '집'을 찾아주는 것. 그것이 리호밍센터의 유일한 사명이자 존재 이유입니다.
             </motion.p>
           </div>
         </div>

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
+import ChannelTalk from "@/components/common/ChannelTalk";
 
 export const metadata: Metadata = {
   title: "리호밍센터 - 완벽한 가족을 만나는 곳",
@@ -23,6 +24,7 @@ export default function RootLayout({
           {children}
         </main>
         <Footer />
+        <ChannelTalk />
       </body>
     </html>
   );
