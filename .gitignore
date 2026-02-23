@@ -23,6 +23,11 @@
 # misc
 .DS_Store
 *.pem
+.agent
+.agents
+.documents
+.opencode
+/video
 
 # debug
 npm-debug.log*

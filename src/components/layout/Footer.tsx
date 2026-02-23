@@ -1,24 +1,28 @@
 import Link from "next/link";
+import ImagePlaceholder from "@/components/common/ImagePlaceholder";
 
 export default function Footer() {
     return (
-        <footer className="bg-[#1C1C1E] text-gray-300 py-16 text-sm border-t border-gray-800">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <footer className="bg-[#1C1C1E] text-gray-300 py-24 text-sm border-t border-gray-800">
+            <div className="max-w-[90rem] mx-auto px-6 sm:px-8 lg:px-12">
                 {/* Top Section: Branding, Links, and Contact */}
-                <div className="grid grid-cols-1 md:grid-cols-12 gap-12 lg:gap-8 mb-16 pb-12 border-b border-gray-800">
+                <div className="grid grid-cols-1 md:grid-cols-12 gap-16 lg:gap-12 mb-20 pb-16 border-b border-gray-800">
 
                     {/* Brand Idea / Slogan (Spans 4 columns) */}
-                    <div className="md:col-span-12 lg:col-span-4">
-                        <Link href="/" className="inline-block mb-6">
-                            <h2 className="text-2xl font-bold tracking-tighter text-white">
-                                리호밍센터 <span className="text-gray-500 font-light text-xl">Rehoming Center</span>
-                            </h2>
+                    <div className="md:col-span-12 lg:col-span-4 flex flex-col items-start leading-relaxed">
+                        <Link href="/" className="inline-block mb-8">
+                            <div className="flex items-center gap-4">
+                                <ImagePlaceholder width="48px" height="48px" text="로고" className="rounded-xl border-gray-700 bg-gray-800/50 !text-gray-400" />
+                                <h2 className="text-3xl font-bold tracking-tighter text-white">
+                                    리호밍센터 <span className="text-gray-500 font-light text-xl">Rehoming</span>
+                                </h2>
+                            </div>
                         </Link>
-                        <p className="text-gray-400 mb-6 leading-relaxed bg-gray-900/50 p-6 rounded-2xl border border-gray-800/50 inline-block w-full">
+                        <p className="text-gray-400 mb-6 leading-relaxed bg-gray-900/50 p-8 rounded-3xl border border-gray-800/50 inline-block w-full">
                             "평생 함께 할 가족을 만나는<br />
-                            <span className="text-gray-200 font-medium">가장 아름답고 완벽한 여정</span>"
+                            <span className="text-gray-200 font-medium text-lg">가장 아름답고 완벽한 여정</span>"
                             <br /><br />
-                            <span className="text-xs text-gray-500 font-light">
+                            <span className="text-sm text-gray-500 font-light mt-2 block">
                                 대한민국을 대표하는 프리미엄 입양 연계 플랫폼
                             </span>
                         </p>
