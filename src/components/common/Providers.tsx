@@ -1,11 +1,12 @@
 'use client';
 
-import { NavermapsProvider } from 'react-naver-maps';
+import { ApolloProvider } from '@apollo/client/react';
+import { client } from '@/lib/apollo-client';
 
-export default function Providers({ children, clientId }: { children: React.ReactNode, clientId: string }) {
+export default function Providers({ children }: { children: React.ReactNode }) {
     return (
-        <NavermapsProvider ncpClientId={clientId}>
+        <ApolloProvider client={client}>
             {children}
-        </NavermapsProvider>
+        </ApolloProvider>
     );
 }

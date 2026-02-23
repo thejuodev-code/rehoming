@@ -4,6 +4,9 @@ import { useRef } from "react";
 import { motion, useScroll, useTransform } from "framer-motion";
 import Link from "next/link";
 import Image from "next/image";
+import { useQuery } from '@apollo/client/react';
+import { GET_POSTS } from '@/lib/queries';
+import { GetPostsData } from '@/types/graphql';
 
 import ImagePlaceholder from "@/components/common/ImagePlaceholder";
 
@@ -33,6 +36,10 @@ const staggerContainer = {
 };
 
 export default function Home() {
+  const { data, loading } = useQuery<GetPostsData>(GET_POSTS, {
+    variables: { first: 3 }
+  });
+
   // Hero 텍스트 및 배경 Parallax 스크롤 감지
   const heroRef = useRef(null);
   const { scrollYProgress: heroProgress } = useScroll({
@@ -357,59 +364,68 @@ export default function Home() {
             viewport={{ once: true, margin: "-100px" }}
             className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10 lg:gap-14"
           >
-            {[1, 2, 3].map((item) => (
-              <motion.div
-                key={item}
-                variants={fadeInUp as any}
-                whileHover={{ y: -20, scale: 1.02 }}
-                transition={{ type: "spring", stiffness: 300, damping: 25 }}
-                className="group bg-white rounded-[2.5rem] md:rounded-[3rem] overflow-hidden hover:shadow-[0_40px_80px_-20px_rgba(37,99,235,0.15)] shadow-xl shadow-gray-200/50 transition-all duration-700 border border-gray-100/50 flex flex-col"
-              >
-                <div className="relative aspect-[4/3] w-full bg-gray-100 overflow-hidden">
-                  <motion.div
-                    whileHover={{ scale: 1.05 }}
-                    transition={{ duration: 0.6 }}
-                    className="w-full h-full"
-                  >
-                    <ImagePlaceholder width="100%" height="100%" text={`아이 사진 ${item}`} className="!rounded-none border-none !bg-gray-100" />
-                  </motion.div>
-                  <div className="absolute top-6 left-6 z-10 bg-white/90 backdrop-blur-md px-5 py-2 rounded-full text-sm font-bold text-gray-900 shadow-lg border border-white/50">
-                    구조 {item}개월 차
-                  </div>
-                </div>
-
-                <div className="p-10 md:p-12 flex-grow flex flex-col">
-                  <div className="flex justify-between items-start mb-6">
-                    <h3 className="text-3xl font-bold text-gray-900">멍멍이 {item}</h3>
-                    <span className="flex items-center text-sm font-bold text-brand-trust bg-blue-50/80 px-4 py-2 rounded-xl">
-                      #입양가능
-                    </span>
-                  </div>
-
-                  <ul className="flex flex-wrap gap-2.5 mb-8">
-                    <li className="text-sm font-medium text-gray-600 bg-gray-50 px-4 py-2 rounded-full border border-gray-100">믹스견</li>
-                    <li className="text-sm font-medium text-gray-600 bg-gray-50 px-4 py-2 rounded-full border border-gray-100">2살 추정</li>
-                    <li className="text-sm font-medium text-gray-600 bg-gray-50 px-4 py-2 rounded-full border border-gray-100">수컷</li>
-                  </ul>
-
-                  <p className="text-lg text-gray-500 font-light leading-relaxed mb-10 flex-grow break-keep">
-                    사람을 무척 좋아하고 산책 매너가 훌륭한 아이입니다. 따뜻하게 품어주실 평생 가족을 기다리고 있습니다.
-                  </p>
-
-                  <div className="pt-8 border-t border-gray-100/80 mt-auto">
-                    <Link
-                      href={`/adopt/${item}`}
-                      className="flex items-center justify-between text-gray-900 font-semibold text-lg group-hover:text-brand-trust transition-colors"
+            {loading ? (
+              [1, 2, 3].map((item) => (
+                <div key={item} className="animate-pulse bg-white rounded-[3rem] h-[500px] shadow-sm" />
+              ))
+            ) : (
+              data?.posts?.nodes?.map((post: any) => (
+                <motion.div
+                  key={post.id}
+                  variants={fadeInUp as any}
+                  whileHover={{ y: -20, scale: 1.02 }}
+                  transition={{ type: "spring", stiffness: 300, damping: 25 }}
+                  className="group bg-white rounded-[2.5rem] md:rounded-[3rem] overflow-hidden hover:shadow-[0_40px_80px_-20px_rgba(37,99,235,0.15)] shadow-xl shadow-gray-200/50 transition-all duration-700 border border-gray-100/50 flex flex-col"
+                >
+                  <div className="relative aspect-[4/3] w-full bg-gray-100 overflow-hidden">
+                    <motion.div
+                      whileHover={{ scale: 1.05 }}
+                      transition={{ duration: 0.6 }}
+                      className="w-full h-full"
                     >
-                      상세 프로필 확인
-                      <div className="w-12 h-12 rounded-full bg-gray-50 flex items-center justify-center group-hover:bg-brand-trust group-hover:text-white transition-all duration-300 transform group-hover:scale-110">
-                        &rarr;
-                      </div>
-                    </Link>
+                      {post.featuredImage?.node?.sourceUrl ? (
+                        <img
+                          src={post.featuredImage.node.sourceUrl}
+                          alt={post.title}
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <ImagePlaceholder width="100%" height="100%" text={post.title} className="!rounded-none border-none !bg-gray-100" />
+                      )}
+                    </motion.div>
+                    <div className="absolute top-6 left-6 z-10 bg-white/90 backdrop-blur-md px-5 py-2 rounded-full text-sm font-bold text-gray-900 shadow-lg border border-white/50">
+                      입양 대기 중
+                    </div>
                   </div>
-                </div>
-              </motion.div>
-            ))}
+
+                  <div className="p-10 md:p-12 flex-grow flex flex-col">
+                    <div className="flex justify-between items-start mb-6">
+                      <h3 className="text-3xl font-bold text-gray-900">{post.title}</h3>
+                      <span className="flex items-center text-sm font-bold text-brand-trust bg-blue-50/80 px-4 py-2 rounded-xl">
+                        #입양가능
+                      </span>
+                    </div>
+
+                    <div
+                      className="text-lg text-gray-500 font-light leading-relaxed mb-10 flex-grow break-keep line-clamp-2"
+                      dangerouslySetInnerHTML={{ __html: post.excerpt }}
+                    />
+
+                    <div className="pt-8 border-t border-gray-100/80 mt-auto">
+                      <Link
+                        href={`/adopt/${post.slug || post.id}`}
+                        className="flex items-center justify-between text-gray-900 font-semibold text-lg group-hover:text-brand-trust transition-colors"
+                      >
+                        상세 프로필 확인
+                        <div className="w-12 h-12 rounded-full bg-gray-50 flex items-center justify-center group-hover:bg-brand-trust group-hover:text-white transition-all duration-300 transform group-hover:scale-110">
+                          &rarr;
+                        </div>
+                      </Link>
+                    </div>
+                  </div>
+                </motion.div>
+              ))
+            )}
           </motion.div>
 
           <div className="text-center mt-16 md:hidden">

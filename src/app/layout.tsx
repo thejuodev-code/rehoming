@@ -4,6 +4,7 @@ import "./globals.css";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import ChannelTalk from "@/components/common/ChannelTalk";
+import Providers from "@/components/common/Providers";
 
 const notoSansKr = Noto_Sans_KR({
   subsets: ["latin"],
@@ -30,7 +31,9 @@ export default function RootLayout({
       >
         <Header />
         <main className="flex-grow">
-          {children}
+          <Providers>
+            {children}
+          </Providers>
         </main>
         <Footer />
         <ChannelTalk />
