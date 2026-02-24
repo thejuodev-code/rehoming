@@ -1,219 +1,164 @@
-# AGENTS.md - Rehoming Center Project
+# AGENTS.md - Rehoming Center
 
-This document provides guidance for AI coding agents working in this repository.
+**Updated:** 2026-02-24 | **Commit:** 92ad146 | **Branch:** main
 
-## Project Overview
+Korean pet adoption center (입양 센터) built with Next.js 14 App Router.
 
-A Next.js 16 application for a Korean pet adoption center (rehoming center). Features a premium UI with Framer Motion animations, Apollo Client for GraphQL data fetching, and Tailwind CSS 4 for styling.
+---
 
-## Build/Lint/Test Commands
+## Stack
+
+| Layer | Tech |
+|-------|------|
+| Framework | Next.js 14.2.23 (App Router) |
+| React | 18.3.1 |
+| Styling | Tailwind CSS 4 (`@theme` in globals.css) |
+| Data | Apollo Client 4 → WordPress GraphQL |
+| Animation | Framer Motion |
+| Font | Pretendard Variable (Korean) |
+| TypeScript | Strict mode |
+
+---
+
+## Commands
 
 ```bash
-# Development
-npm run dev          # Start dev server at localhost:3000
-
-# Production
-npm run build        # Build for production
-npm run start        # Start production server
-
-# Linting
-npm run lint         # Run ESLint on entire project
-npm run lint -- --fix  # Auto-fix lint issues
-
-# Single File Lint
-npx eslint src/app/page.tsx
-
-# Type Checking
-npx tsc --noEmit     # Run TypeScript type check without emitting
+npm run dev                 # localhost:3000
+npm run build               # Production build
+npm run lint                # ESLint
+npm run lint -- --fix       # Auto-fix
+npx tsc --noEmit            # Type check
 ```
 
-**Note**: No test framework is currently configured.
+**No test framework configured.**
 
-## Tech Stack
+---
 
-- **Framework**: Next.js 16 (App Router)
-- **React**: 19.2.3
-- **Styling**: Tailwind CSS 4 with custom theme
-- **TypeScript**: Strict mode enabled
-- **Data Fetching**: Apollo Client + GraphQL
-- **Animation**: Framer Motion
-- **Font**: Pretendard Variable (Korean-optimized)
-
-## Project Structure
+## Structure
 
 ```
 src/
-├── app/                    # Next.js App Router pages
-│   ├── layout.tsx          # Root layout (Header + Footer)
-│   ├── page.tsx            # Home page
-│   ├── globals.css         # Tailwind + custom theme
-│   └── [route]/page.tsx    # Route pages (about, adopt, etc.)
+├── app/                    # Routes: /, /about, /adopt, /activities/[slug], /donate, /impact, /process, /reviews
+│   ├── layout.tsx          # Root layout (Header/Footer/Providers)
+│   ├── page.tsx            # Home (539 lines - largest file)
+│   └── globals.css         # Tailwind @theme: brand-trust, brand-warmth
 ├── components/
-│   ├── layout/             # Layout components (Header, Footer)
-│   └── common/             # Shared components (ChannelTalk)
+│   ├── common/             # Providers, ChannelTalk, ImagePlaceholder
+│   ├── layout/             # Header, Footer
+│   └── about/              # AboutTabs, KakaoMapLocation
+├── lib/
+│   ├── apollo-client.ts    # Apollo config (NEXT_PUBLIC_WORDPRESS_API_URL)
+│   └── queries.ts          # GraphQL: GET_POSTS, GET_ACTIVITIES, GET_ACTIVITY_BY_SLUG
+└── types/
+    └── graphql.ts          # WordPressPost, ActivityPost, GetPostsData, etc.
 ```
 
-## Code Style Guidelines
+---
 
-### Imports
+## Where to Look
 
+| Task | File(s) |
+|------|--------|
+| Add page | `src/app/[route]/page.tsx` |
+| Edit navigation | `src/components/layout/Header.tsx` (navigation array) |
+| Add GraphQL query | `src/lib/queries.ts` + type in `src/types/graphql.ts` |
+| Change brand colors | `src/app/globals.css` → `@theme` block |
+| Modify Apollo config | `src/lib/apollo-client.ts` |
+| Add global provider | `src/components/common/Providers.tsx` + import in `layout.tsx` |
+| Edit home page | `src/app/page.tsx` (539 lines - consider splitting if adding more) |
+
+---
+
+## Code Style
+
+### Imports (strict order)
 ```tsx
-"use client";  // Must be first line if client component
+"use client";  // First line if client component
 
-// 1. External imports (React, Next.js, libraries)
-import { useState, useEffect } from "react";
-import Link from "next/link";
+// 1. React/Next
+import { useState } from "react";
+import { useQuery } from '@apollo/client/react';
 import { motion } from "framer-motion";
+import Link from "next/link";
 
-// 2. Internal imports with @/ alias
+// 2. @/ alias
 import Header from "@/components/layout/Header";
+import { GET_POSTS } from '@/lib/queries';
 ```
-
-- Use `@/` alias for internal imports (maps to `./src/*`)
-- Place `"use client"` directive at the very top when needed
-- Import types separately: `import type { Metadata } from "next";`
 
 ### Components
-
 ```tsx
-// Default export pattern
-export default function ComponentName() {
-  return (
-    // JSX
-  );
-}
+// Server (default)
+export default function Page() { return <div />; }
 
-// With props - use Readonly and explicit typing
-export default function RootLayout({
-  children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
-  // ...
-}
+// Client
+'use client';
+export default function Widget({ title }: { title: string }) { return <div>{title}</div>; }
 ```
 
-- Use `export default function` for all components
-- Component names: PascalCase (Header, Footer, ChannelTalk)
-- File names: PascalCase for components (Header.tsx)
-- Use `Readonly<>` wrapper for immutable props
+- Always `export default function`
+- Inline prop types: `{ prop: Type }`
 
-### TypeScript
-
-- Strict mode is enabled - no `any` types without justification
-- Use `type` keyword for type definitions
-- Inline types for simple props, separate types for complex ones
-- Global declarations in component files when needed:
-
+### Tailwind
 ```tsx
-declare global {
-  interface Window {
-    ChannelIO?: any;
-  }
-}
-```
-
-### Styling (Tailwind CSS 4)
-
-Custom theme colors defined in `globals.css`:
-
-```css
---color-brand-trust: #002EDB;   /* Primary blue */
---color-brand-warmth: #F59E0B;  /* Accent amber/orange */
-```
-
-Usage patterns:
-
-```tsx
-// Use custom colors
+// Brand colors from @theme
 className="text-brand-trust bg-brand-warmth"
 
-// Multi-line className with ternary
-className={`base-classes ${condition
-  ? "true-classes"
-  : "false-classes"
-}`}
+// Korean text
+className="break-keep"  // Prevents awkward line breaks
 ```
-
-- Utility-first approach - avoid custom CSS unless necessary
-- Use responsive prefixes: `md:`, `lg:`, `sm:`
-- Use `group` and `group-hover:` for hover effects on children
-
-### Formatting
-
-- Double quotes for strings
-- No semicolons (project convention is inconsistent, prefer omitting)
-- Template literals for dynamic class strings
-- Multi-line ternary expressions inside template literals
-- 2-space indentation
-
-### React Patterns
-
-```tsx
-// State initialization
-const [scrolled, setScrolled] = useState(false);
-
-// Effects with cleanup
-useEffect(() => {
-  const handler = () => {};
-  window.addEventListener("scroll", handler);
-  return () => window.removeEventListener("scroll", handler);
-}, []);
-
-// Early returns for guards
-if (typeof window === "undefined") return;
-```
-
-- Use functional updates when state depends on previous state
-- Clean up event listeners and subscriptions in useEffect return
-- Use early returns for SSR guards and validation
-
-### Error Handling
-
-- Use early returns instead of deeply nested conditionals
-- Optional chaining (`?.`) for potentially undefined values
-- Return `null` for components that shouldn't render
 
 ### Framer Motion
-
 ```tsx
-import { motion } from "framer-motion";
+const fadeInUp = {
+  hidden: { opacity: 0, y: 60, scale: 0.98 },
+  visible: { opacity: 1, y: 0, scale: 1, transition: { duration: 1.2, ease: [0.16, 1, 0.3, 1] } }
+};
 
-<motion.div
-  initial={{ opacity: 0, y: 30 }}
-  animate={{ opacity: 1, y: 0 }}
-  transition={{ duration: 0.8, delay: 0.1 }}
-  whileHover={{ y: -10 }}
->
+<motion.div variants={fadeInUp} initial="hidden" whileInView="visible" viewport={{ once: true }}>
 ```
 
-- Use `motion` components for animated elements
-- `whileInView` for scroll-triggered animations with `viewport: { once: true }`
-- Keep animation values consistent with existing patterns
+### GraphQL
+```tsx
+import { useQuery } from '@apollo/client/react';  // NOT '@apollo/client'
 
-## Naming Conventions
+const { data, loading } = useQuery<GetPostsData>(GET_POSTS);
+{loading ? <Skeleton /> : data?.posts?.nodes?.map(...)}
+```
 
-| Type | Convention | Example |
-|------|------------|---------|
-| Components | PascalCase | `Header`, `ChannelTalk` |
-| Functions | camelCase | `handleScroll` |
-| Variables | camelCase | `navigation`, `isActive` |
-| Constants | camelCase | `pluginKey` |
-| CSS custom properties | kebab-case | `--color-brand-trust` |
+---
 
-## Files to Avoid Editing
+## Anti-Patterns
 
-- `.next/` - Build output
-- `node_modules/` - Dependencies
-- `next-env.d.ts` - Auto-generated TypeScript declarations
+| Pattern | Location | Fix |
+|---------|----------|-----|
+| `fadeInUp as any` | `src/app/page.tsx:148,157,163,378,516` | Type as `Variants` from framer-motion |
+| `post: any` in loops | `src/app/page.tsx:373,375` | Use `WordPressPost` type |
+| `ch: any` | `src/components/common/ChannelTalk.tsx:24` | Type ChannelIO stub properly |
 
-## Environment Variables
+---
 
-- `NEXT_PUBLIC_CHANNEL_TALK_PLUGIN_KEY` - ChannelTalk integration
+## Conventions (from .cursorrules)
 
-## Korean Content
+1. **Think first** - State assumptions. Ask if unclear. Present alternatives.
+2. **Minimal code** - No speculative features. No abstractions for single-use.
+3. **Surgical edits** - Touch only requested code. Match existing style.
+4. **Verify** - Define success criteria. Check before marking done.
 
-This is a Korean-language application. When adding content:
-- Use Korean text for user-facing content
-- Maintain Korean navigation labels
-- Preserve existing Korean copy style (polite, warm tone)
+---
+
+## Environment
+
+| Variable | Purpose |
+|----------|--------|
+| `NEXT_PUBLIC_WORDPRESS_API_URL` | GraphQL endpoint |
+| `NEXT_PUBLIC_CHANNEL_TALK_PLUGIN_KEY` | Chat widget |
+
+---
+
+## Notes
+
+- **Large files**: `src/app/page.tsx` (539 lines), `src/app/activities/page.tsx` (434 lines) - split if growing
+- **No CI/CD**: No `.github/workflows` or tests - add if needed
+- **No Prettier/EditorConfig**: Formatting via ESLint only
+- **Dual next.config**: Both `.mjs` and `.ts` exist (both empty) - pick one

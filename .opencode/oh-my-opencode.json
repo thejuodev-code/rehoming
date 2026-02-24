@@ -47,8 +47,8 @@
       "variant": "xhigh"
     },
     "deep": {
-      "model": "zai-coding-plan/glm-5",
-      "variant": "high"
+      "model": "openai/gpt-5.3-codex",
+      "variant": "medum"
     },
     "artistry": {
       "model": "google/gemini-3.1-pro-preview",

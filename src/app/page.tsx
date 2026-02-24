@@ -369,62 +369,65 @@ export default function Home() {
                 <div key={item} className="animate-pulse bg-white rounded-[3rem] h-[500px] shadow-sm" />
               ))
             ) : (
-              data?.posts?.nodes?.map((post: any) => (
-                <motion.div
-                  key={post.id}
-                  variants={fadeInUp as any}
-                  whileHover={{ y: -20, scale: 1.02 }}
-                  transition={{ type: "spring", stiffness: 300, damping: 25 }}
-                  className="group bg-white rounded-[2.5rem] md:rounded-[3rem] overflow-hidden hover:shadow-[0_40px_80px_-20px_rgba(37,99,235,0.15)] shadow-xl shadow-gray-200/50 transition-all duration-700 border border-gray-100/50 flex flex-col"
-                >
-                  <div className="relative aspect-[4/3] w-full bg-gray-100 overflow-hidden">
-                    <motion.div
-                      whileHover={{ scale: 1.05 }}
-                      transition={{ duration: 0.6 }}
-                      className="w-full h-full"
-                    >
-                      {post.featuredImage?.node?.sourceUrl ? (
-                        <img
-                          src={post.featuredImage.node.sourceUrl}
-                          alt={post.title}
-                          className="w-full h-full object-cover"
-                        />
-                      ) : (
-                        <ImagePlaceholder width="100%" height="100%" text={post.title} className="!rounded-none border-none !bg-gray-100" />
-                      )}
-                    </motion.div>
-                    <div className="absolute top-6 left-6 z-10 bg-white/90 backdrop-blur-md px-5 py-2 rounded-full text-sm font-bold text-gray-900 shadow-lg border border-white/50">
-                      입양 대기 중
-                    </div>
-                  </div>
-
-                  <div className="p-10 md:p-12 flex-grow flex flex-col">
-                    <div className="flex justify-between items-start mb-6">
-                      <h3 className="text-3xl font-bold text-gray-900">{post.title}</h3>
-                      <span className="flex items-center text-sm font-bold text-brand-trust bg-blue-50/80 px-4 py-2 rounded-xl">
-                        #입양가능
-                      </span>
-                    </div>
-
-                    <div
-                      className="text-lg text-gray-500 font-light leading-relaxed mb-10 flex-grow break-keep line-clamp-2"
-                      dangerouslySetInnerHTML={{ __html: post.excerpt }}
-                    />
-
-                    <div className="pt-8 border-t border-gray-100/80 mt-auto">
-                      <Link
-                        href={`/adopt/${post.slug || post.id}`}
-                        className="flex items-center justify-between text-gray-900 font-semibold text-lg group-hover:text-brand-trust transition-colors"
+              data?.posts?.nodes
+                ?.filter((post: any) => !post.categories?.nodes?.some((cat: any) => cat.slug === 'activity'))
+                .slice(0, 3)
+                .map((post: any) => (
+                  <motion.div
+                    key={post.id}
+                    variants={fadeInUp as any}
+                    whileHover={{ y: -20, scale: 1.02 }}
+                    transition={{ type: "spring", stiffness: 300, damping: 25 }}
+                    className="group bg-white rounded-[2.5rem] md:rounded-[3rem] overflow-hidden hover:shadow-[0_40px_80px_-20px_rgba(37,99,235,0.15)] shadow-xl shadow-gray-200/50 transition-all duration-700 border border-gray-100/50 flex flex-col"
+                  >
+                    <div className="relative aspect-[4/3] w-full bg-gray-100 overflow-hidden">
+                      <motion.div
+                        whileHover={{ scale: 1.05 }}
+                        transition={{ duration: 0.6 }}
+                        className="w-full h-full"
                       >
-                        상세 프로필 확인
-                        <div className="w-12 h-12 rounded-full bg-gray-50 flex items-center justify-center group-hover:bg-brand-trust group-hover:text-white transition-all duration-300 transform group-hover:scale-110">
-                          &rarr;
-                        </div>
-                      </Link>
+                        {post.featuredImage?.node?.sourceUrl ? (
+                          <img
+                            src={post.featuredImage.node.sourceUrl}
+                            alt={post.title}
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          <ImagePlaceholder width="100%" height="100%" text={post.title} className="!rounded-none border-none !bg-gray-100" />
+                        )}
+                      </motion.div>
+                      <div className="absolute top-6 left-6 z-10 bg-white/90 backdrop-blur-md px-5 py-2 rounded-full text-sm font-bold text-gray-900 shadow-lg border border-white/50">
+                        입양 대기 중
+                      </div>
                     </div>
-                  </div>
-                </motion.div>
-              ))
+
+                    <div className="p-10 md:p-12 flex-grow flex flex-col">
+                      <div className="flex justify-between items-start mb-6">
+                        <h3 className="text-3xl font-bold text-gray-900">{post.title}</h3>
+                        <span className="flex items-center text-sm font-bold text-brand-trust bg-blue-50/80 px-4 py-2 rounded-xl">
+                          #입양가능
+                        </span>
+                      </div>
+
+                      <div
+                        className="text-lg text-gray-500 font-light leading-relaxed mb-10 flex-grow break-keep line-clamp-2"
+                        dangerouslySetInnerHTML={{ __html: post.excerpt }}
+                      />
+
+                      <div className="pt-8 border-t border-gray-100/80 mt-auto">
+                        <Link
+                          href={`/adopt/${post.slug || post.id}`}
+                          className="flex items-center justify-between text-gray-900 font-semibold text-lg group-hover:text-brand-trust transition-colors"
+                        >
+                          상세 프로필 확인
+                          <div className="w-12 h-12 rounded-full bg-gray-50 flex items-center justify-center group-hover:bg-brand-trust group-hover:text-white transition-all duration-300 transform group-hover:scale-110">
+                            &rarr;
+                          </div>
+                        </Link>
+                      </div>
+                    </div>
+                  </motion.div>
+                ))
             )}
           </motion.div>
 

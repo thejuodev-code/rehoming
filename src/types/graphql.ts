@@ -29,3 +29,64 @@ export interface GetPagesData {
         nodes: WordPressPage[];
     };
 }
+
+
+export interface ActivityFields {
+    type?: string;
+    impactSummary?: string;
+    pintoimpact?: boolean;
+}
+
+export interface ActivityPost {
+    databaseId: number;
+    title: string;
+    excerpt: string;
+    content?: string;
+    date: string;
+    slug: string;
+    featuredImage?: {
+        node: {
+            sourceUrl: string;
+        };
+    };
+    projectCategories?: {
+        nodes: {
+            name: string;
+            slug: string;
+        }[];
+    };
+    activityFields?: ActivityFields;
+}
+
+export interface GetActivitiesData {
+    projects: {
+        nodes: ActivityPost[];
+    };
+}
+
+export interface ActivityDetailPost {
+    databaseId: number;
+    title: string;
+    content: string;
+    excerpt: string;
+    date: string;
+    slug: string;
+    featuredImage?: {
+        node: {
+            sourceUrl: string;
+        };
+    };
+    projectCategories?: {
+        nodes: {
+            name: string;
+            slug: string;
+        }[];
+    };
+    activityFields?: ActivityFields;
+}
+
+export interface GetActivityDetailData {
+    projects: {
+        nodes: ActivityDetailPost[];
+    };
+}
