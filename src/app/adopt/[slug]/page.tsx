@@ -13,7 +13,7 @@ const fadeInUp = {
     visible: {
         opacity: 1,
         y: 0,
-        transition: { duration: 0.8, ease: [0.16, 1, 0.3, 1] }
+        transition: { duration: 0.8, ease: [0.16, 1, 0.3, 1] as any }
     }
 };
 
@@ -374,7 +374,7 @@ export default function AdoptDetailPage() {
                     <motion.div
                         initial={{ opacity: 0, y: 30 }}
                         animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.8, delay: 0.6, ease: [0.16, 1, 0.3, 1] }}
+                        transition={{ duration: 0.8, delay: 0.6, ease: [0.16, 1, 0.3, 1] as any }}
                         className="mt-16 bg-gray-50/50 rounded-[2rem] border border-gray-100 p-8 md:p-12 lg:p-16 w-full"
                     >
                         <div className="flex items-center gap-3 mb-8 pb-6 border-b border-gray-100">
