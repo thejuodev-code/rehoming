@@ -32,7 +32,7 @@ export default function Footer() {
                     <div className="md:col-span-5 lg:col-span-3 lg:col-start-6">
                         <h3 className="font-bold text-white mb-6 tracking-wide text-xs uppercase text-brand-trust">바로가기</h3>
                         <ul className="grid grid-cols-1 gap-4">
-                            <li><Link href="/about" className="hover:text-white hover:translate-x-1 inline-block transition-all">보호소 소개</Link></li>
+                            <li><Link href="/about" className="hover:text-white hover:translate-x-1 inline-block transition-all">센터 소개</Link></li>
                             <li><Link href="/process" className="hover:text-white hover:translate-x-1 inline-block transition-all">입양 절차</Link></li>
                             <li><Link href="/adopt" className="hover:text-white hover:translate-x-1 inline-block transition-all">입양 공고</Link></li>
                             <li><Link href="/reviews" className="hover:text-white hover:translate-x-1 inline-block transition-all">입양 후기</Link></li>

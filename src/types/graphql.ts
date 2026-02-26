@@ -90,3 +90,91 @@ export interface GetActivityDetailData {
         nodes: ActivityDetailPost[];
     };
 }
+
+// ==========================================
+// Animal (Adoption) Types
+// ==========================================
+export interface AnimalFields {
+    age?: string;
+    gender?: string;
+    breed?: string;
+    hashtags?: string;
+    weight?: string;
+    rescueDate?: string;
+    rescueLocation?: string;
+    personality?: string;
+    medicalHistory?: string;
+    image?: {
+        node: {
+            sourceUrl: string;
+        };
+    };
+}
+
+export interface GetAnimalBySlugData {
+    animal: AnimalPost | null;
+}
+
+export interface AnimalPost {
+    databaseId: number;
+    title: string;
+    excerpt: string; // Used for "2살 추정 | 여아 | 믹스" string
+    content?: string;
+    slug: string;
+    date: string;
+    featuredImage?: {
+        node: {
+            sourceUrl: string;
+        };
+    };
+    animalFields?: AnimalFields;
+    animalTypes?: {
+        nodes: {
+            name: string;
+            slug: string;
+        }[];
+    };
+    animalStatuses?: {
+        nodes: {
+            name: string;
+            slug: string;
+        }[];
+    };
+}
+
+export interface GetAnimalsData {
+    animals: {
+        nodes: AnimalPost[];
+    };
+}
+
+// ==========================================
+// Review (입양 후기) Types
+// ==========================================
+export interface ReviewFields {
+    authorName?: string;
+    animalName?: string;
+    adoptionDate?: string;
+    rating?: number;
+}
+
+export interface ReviewPost {
+    databaseId: number;
+    title: string;
+    excerpt: string;
+    content?: string;
+    slug: string;
+    date: string;
+    featuredImage?: {
+        node: {
+            sourceUrl: string;
+        };
+    };
+    reviewFields?: ReviewFields;
+}
+
+export interface GetReviewsData {
+    reviews: {
+        nodes: ReviewPost[];
+    };
+}

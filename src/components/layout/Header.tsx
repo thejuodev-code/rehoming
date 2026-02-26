@@ -9,15 +9,14 @@ import { motion, AnimatePresence } from "framer-motion";
 // 메뉴 데이터 구조 확장 (서브메뉴 포함)
 const navigation = [
   {
-    name: "보호소 소개", href: "/about",
+    name: "센터 소개", href: "/about",
     subItems: [] // 서브메뉴 제거 (다일 페이지)
   },
   {
-    name: "입양", href: "/adopt",
+    name: "입양", href: "/process",
     subItems: [
-      { name: "입양 공고", href: "/adopt", desc: "새로운 가족을 찾는 천사들" },
       { name: "입양 절차", href: "/process", desc: "입양 전 필수 확인 사항" },
-      { name: "입양 상담 신청", href: "/process#apply", desc: "전문가와 함께하는 매칭 상담" },
+      { name: "입양 공고", href: "/adopt", desc: "새로운 가족을 찾는 천사들" },
       { name: "입양 후기", href: "/reviews", desc: "가족이 된 아이들의 따뜻한 이야기" }
     ]
   },
@@ -55,10 +54,10 @@ export default function Header() {
   return (
     <header
       className={`fixed top-0 w-full z-50 transition-all duration-700 flex items-center ${scrolled
-          ? "bg-white/95 backdrop-blur-lg shadow-sm shadow-black/5 h-20"
-          : isHome
-            ? "bg-transparent h-24"
-            : "bg-white/95 backdrop-blur-lg shadow-sm h-24"
+        ? "bg-white/95 backdrop-blur-lg shadow-sm shadow-black/5 h-20"
+        : isHome
+          ? "bg-transparent h-24"
+          : "bg-white/95 backdrop-blur-lg shadow-sm h-24"
         }`}
     >
       <div className="w-full max-w-[90rem] mx-auto px-6 sm:px-8 lg:px-12">
@@ -162,7 +161,7 @@ export default function Header() {
           {/* 오른쪽 버튼 */}
           <div className="flex-shrink-0 w-1/4 flex justify-end items-center gap-4">
             <Link
-              href="/adopt"
+              href="/process"
               className={`hidden md:inline-flex items-center justify-center px-7 py-2.5 text-[15px] font-bold rounded-full transition-all whitespace-nowrap ${isTransparent
                 ? "text-white border-2 border-white/60 hover:bg-white/20 hover:border-white backdrop-blur-sm"
                 : "text-white bg-gradient-to-r from-brand-trust to-blue-600 hover:from-blue-700 hover:to-indigo-600 shadow-lg hover:shadow-brand-trust/30 hover:-translate-y-0.5"
