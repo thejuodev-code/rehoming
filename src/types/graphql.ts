@@ -149,13 +149,15 @@ export interface GetAnimalsData {
 }
 
 // ==========================================
-// Review (입양 후기) Types
+// Review (입양 후기) Types — 관리자 직접 등록 방식
 // ==========================================
 export interface ReviewFields {
-    authorName?: string;
-    animalName?: string;
-    adoptionDate?: string;
-    rating?: number;
+    authorName?: string;    // 입양인 이름 (관리자 입력)
+    animalName?: string;    // 동물 이름
+    animalType?: string;    // "강아지" | "고양이" | "기타"
+    adoptionDate?: string;  // 입양 완료일
+    quote?: string;         // 카드 상단 핵심 한 줄 인용문
+    isPinned?: boolean;     // true = 상단 고정 (featured 스타일 표시)
 }
 
 export interface ReviewPost {
@@ -174,6 +176,12 @@ export interface ReviewPost {
 }
 
 export interface GetReviewsData {
+    reviews: {
+        nodes: ReviewPost[];
+    };
+}
+
+export interface GetReviewBySlugData {
     reviews: {
         nodes: ReviewPost[];
     };

@@ -382,16 +382,16 @@ export default function ActivitiesPage() {
                     </p>
                     <div className="flex flex-col sm:flex-row justify-center gap-4">
                         <Link
-                            href="/donate"
+                            href="/about"
                             className="bg-white text-brand-trust px-10 py-5 rounded-full font-bold text-lg hover:bg-blue-50 transition-all duration-300 shadow-xl hover:-translate-y-1"
                         >
-                            후원하기
+                            더 알아보기
                         </Link>
                         <Link
                             href="/about"
                             className="bg-transparent border border-white/40 text-white px-10 py-5 rounded-full font-bold text-lg hover:bg-white/10 transition-all duration-300 hover:-translate-y-1 backdrop-blur-sm"
                         >
-                            더 알아보기
+                            센터 소개
                         </Link>
                     </div>
                 </div>

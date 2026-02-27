@@ -244,8 +244,113 @@ export const GET_REVIEWS = gql`
         reviewFields {
           authorName
           animalName
+          animalType
           adoptionDate
-          rating
+          quote
+          isPinned
+        }
+      }
+    }
+  }
+`;
+
+export const GET_REVIEW_BY_SLUG = gql`
+  query GetReviewBySlug($id: [ID]) {
+    reviews(where: { in: $id }, first: 1) {
+      nodes {
+        databaseId
+        title
+        excerpt
+        content
+        slug
+        date
+        featuredImage {
+          node {
+            sourceUrl
+          }
+        }
+        reviewFields {
+          authorName
+          animalName
+          animalType
+          adoptionDate
+          quote
+          isPinned
+        }
+      }
+    }
+  }
+`;
+
+// ==========================================
+// Support Board (후원/봉사 게시판)
+// ==========================================
+export const GET_SUPPORT_POSTS = gql`
+  query GetSupportPosts($first: Int = 50) {
+    supportPosts(first: $first, where: { orderby: { field: DATE, order: DESC } }) {
+      nodes {
+        databaseId
+        title
+        slug
+        date
+        author {
+          node {
+            name
+          }
+        }
+        supportCategories {
+          nodes {
+            name
+            slug
+          }
+        }
+        supportMeta {
+          isNotice
+          viewCount
+          attachedFile {
+            node {
+              sourceUrl
+              mediaItemUrl
+              mimeType
+              title
+            }
+          }
+        }
+      }
+    }
+  }
+`;
+
+export const GET_SUPPORT_POST_BY_SLUG = gql`
+  query GetSupportPostBySlug($id: ID!) {
+    supportPost(id: $id, idType: SLUG) {
+      databaseId
+      title
+      content
+      slug
+      date
+      author {
+        node {
+          name
+        }
+      }
+      supportCategories {
+        nodes {
+          name
+          slug
+        }
+      }
+      supportMeta {
+        isNotice
+        viewCount
+        attachedFile {
+          node {
+            sourceUrl
+            mediaItemUrl
+            mimeType
+            title
+            fileSize
+          }
         }
       }
     }

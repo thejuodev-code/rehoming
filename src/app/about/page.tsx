@@ -9,49 +9,31 @@ import KakaoMapLocation from "@/components/about/KakaoMapLocation";
 const smooth: [number, number, number, number] = [0.16, 1, 0.3, 1];
 
 /* ─── Data ─── */
-const stats = [
-    { value: "98%", label: "입양 성공률", desc: "입양된 아이들의 행복한 정착" },
-    { value: "500+", label: "누적 입양 완료", desc: "새 가족을 만난 아이들" },
-    { value: "5년", label: "운영 경력", desc: "꾸준한 헌신과 전문성" },
-    { value: "24/7", label: "케어 시스템", desc: "쉬지 않는 돌봄" },
-];
 
 const values = [
     {
+        num: "01",
         title: "생명 존중",
         subtitle: "Respect for Life",
         desc: "모든 생명은 소중하며, 이유 없이 버려질 수 없습니다. 끝까지 최선의 사랑을 다해 보살핍니다.",
-        accent: "from-emerald-500 to-teal-500",
-        bgLight: "bg-emerald-50",
-        imgAlt: "생명 존중 사진",
-        size: "md:col-span-2 md:row-span-2", // Large tile
     },
     {
+        num: "02",
         title: "투명한 입양",
         subtitle: "Transparent Adoption",
         desc: "아이들과 입양 가족 모두가 행복할 수 있도록 신중하고 투명하게 모든 절차를 진행합니다.",
-        accent: "from-blue-500 to-indigo-500",
-        bgLight: "bg-blue-50",
-        imgAlt: "투명한 입양 사진",
-        size: "md:col-span-1 md:row-span-1",
     },
     {
+        num: "03",
         title: "행동 교정",
         subtitle: "Behavioral Healing",
         desc: "물리적 치료를 넘어 마음의 상처까지 치유하고 전문 훈련사와 함께 사회화 교육을 병행합니다.",
-        accent: "from-violet-500 to-purple-500",
-        bgLight: "bg-violet-50",
-        imgAlt: "행동 교정 사진",
-        size: "md:col-span-1 md:row-span-1",
     },
     {
+        num: "04",
         title: "평생 책임",
         subtitle: "Lifetime Commitment",
         desc: "입양 후에도 지속적인 모니터링과 상담 시스템을 통해 파양 없는 입양 문화를 만들어 갑니다.",
-        accent: "from-amber-500 to-orange-500",
-        bgLight: "bg-amber-50",
-        imgAlt: "평생 책임 사진",
-        size: "md:col-span-2 md:row-span-1",
     },
 ];
 
@@ -317,8 +299,8 @@ export default function AboutPage() {
                             </div>
 
                             <p className="text-xl md:text-2xl text-gray-600 font-light leading-relaxed break-keep">
-                                좋은 보호자를 만나 제 2의 집에서 행복하게 살아갈 수 있도록,{" "}
-                                <strong className="text-brand-trust font-semibold">리호밍센터가 돕겠습니다.</strong>
+                                좋은 보호자를 만나 제 2의 집에서 행복하게 살아갈 수 있도록,
+                                <strong className="text-brand-trust font-semibold block">리호밍센터가 돕겠습니다.</strong>
                             </p>
                         </motion.div>
 
@@ -339,94 +321,91 @@ export default function AboutPage() {
                     </div>
                 </section>
 
-                {/* ═══ 3. PHILOSOPHY — Horizontal Card Columns ═══ */}
-                <section className="relative z-10 bg-gray-50 py-0">
-                    <div className="max-w-[90rem] mx-auto">
-                        <div className="grid grid-cols-1 md:grid-cols-2 min-h-[600px]">
-                            {/* Left: Dark card */}
+                {/* ═══ 3. PHILOSOPHY — Not A Pet Shop (Light Editorial Section) ═══ */}
+                <section className="relative z-10 bg-white py-32 overflow-hidden border-b border-gray-100">
+                    <div className="max-w-[90rem] mx-auto px-6 sm:px-8 lg:px-12 relative z-10">
+                        <div className="grid grid-cols-1 lg:grid-cols-12 gap-16 lg:gap-24 items-center">
+
+                            {/* Left: Typography Block */}
                             <motion.div
-                                initial={{ opacity: 0, x: -80, filter: "blur(20px)" }}
-                                whileInView={{ opacity: 1, x: 0, filter: "blur(0px)" }}
-                                viewport={{ once: false }}
-                                transition={{ duration: 1.4, ease: smooth }}
-                                className="bg-gradient-to-br from-gray-900 via-blue-950 to-gray-900 text-white flex items-center px-10 md:px-16 lg:px-20 py-20"
+                                initial={{ opacity: 0, x: -40 }}
+                                whileInView={{ opacity: 1, x: 0 }}
+                                viewport={{ once: true, margin: "-10%" }}
+                                transition={{ duration: 1.2, ease: smooth }}
+                                className="lg:col-span-5"
                             >
-                                <div className="max-w-lg">
-                                    <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-white/10 rounded-full border border-white/20 text-white/60 text-xs font-bold tracking-[0.25em] uppercase mb-8">
-                                        <span className="w-1.5 h-1.5 rounded-full bg-red-400 animate-pulse" />
-                                        Not a Pet Shop
-                                    </div>
-                                    <h2 className="text-3xl md:text-4xl lg:text-5xl font-extrabold leading-tight break-keep mb-6">
-                                        리호밍센터는{" "}
-                                        <span className="text-transparent bg-clip-text bg-gradient-to-r from-red-300 to-pink-300">
-                                            &ldquo;펫샵&rdquo;
-                                        </span>
-                                        이<br />아닙니다.
-                                    </h2>
-                                    <p className="text-white/50 font-light text-lg leading-relaxed break-keep">
-                                        반려동물을 돈으로 거래하는 곳이 아닌, 정확한 입양절차와 관리 시스템으로 준비된 보호자에게 입양의 기회를 제공합니다.
-                                    </p>
+                                <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-gray-50 rounded-full border border-gray-100 text-brand-trust text-xs font-bold tracking-[0.2em] uppercase mb-8">
+                                    <span className="w-1.5 h-1.5 rounded-full bg-brand-trust animate-pulse" />
+                                    Not a Pet Shop
                                 </div>
+                                <h2 className="text-4xl md:text-5xl lg:text-6xl font-black text-gray-900 leading-[1.15] break-keep mb-8 tracking-tight">
+                                    리호밍센터는<br />
+                                    <span className="text-transparent bg-clip-text bg-gradient-to-r from-gray-400 to-gray-600">&ldquo;펫샵&rdquo;</span>이 아닙니다.
+                                </h2>
+                                <p className="text-lg md:text-xl font-light text-gray-500 leading-relaxed break-keep">
+                                    반려동물을 돈으로 거래하는 곳이 아닌, 투명하고 전문적인 절차를 통해 준비된 보호자에게 진정한 입양의 기회를 제공하는 <strong className="font-semibold text-gray-800">선진국형 입양센터</strong>입니다.
+                                </p>
                             </motion.div>
 
-                            {/* Right: Light card */}
-                            <motion.div
-                                initial={{ opacity: 0, x: 80, filter: "blur(20px)" }}
-                                whileInView={{ opacity: 1, x: 0, filter: "blur(0px)" }}
-                                viewport={{ once: false }}
-                                transition={{ duration: 1.4, ease: smooth }}
-                                className="bg-white flex items-center px-10 md:px-16 lg:px-20 py-20"
-                            >
-                                <div className="max-w-lg">
-                                    <span className="text-[11px] font-bold tracking-[0.3em] uppercase text-brand-trust mb-6 block">선진국형 입양센터</span>
-                                    <h3 className="text-3xl md:text-4xl font-extrabold text-gray-900 leading-tight break-keep mb-6">
-                                        준비된 보호자에게<br />
-                                        <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand-trust to-blue-600">
-                                            입양의 기회를 제공합니다
-                                        </span>
-                                    </h3>
+                            {/* Right: The 3 Pillars (Vertical List) */}
+                            <div className="lg:col-span-7 flex flex-col gap-6">
+                                {[
+                                    {
+                                        title: "의료 검진",
+                                        icon: (
+                                            <svg viewBox="0 0 24 24" fill="none" className="w-7 h-7">
+                                                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                                                <path d="M9 12h6m-3-3v6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                                            </svg>
+                                        ),
+                                        desc: "입양 전, 철저한 종합 건강 검진과 필수 접종을 100% 완료합니다."
+                                    },
+                                    {
+                                        title: "행동 교정",
+                                        icon: (
+                                            <svg viewBox="0 0 24 24" fill="none" className="w-7 h-7">
+                                                <path d="M12 2L15 8l6 1-4.5 4.5 1 6.5-6-3-6 3 1-6.5L2 9l6-1z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                                            </svg>
+                                        ),
+                                        desc: "단순 보호를 넘어, 전문 훈련사의 맞춤형 사회화 교육을 통해 상처를 치유합니다."
+                                    },
+                                    {
+                                        title: "평생 책임",
+                                        icon: (
+                                            <svg viewBox="0 0 24 24" fill="none" className="w-7 h-7">
+                                                <path d="M20.8 4.6a5.5 5.5 0 00-7.7 0l-1.1 1-1.1-1a5.5 5.5 0 00-7.8 7.8l1 1 7.9 7.9 7.9-7.9 1-1a5.5 5.5 0 000-7.8z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                                            </svg>
+                                        ),
+                                        desc: "입양 후에도 끝까지 책임집니다. 전담 관리자를 통한 평생 모니터링 및 상담 시스템."
+                                    }
+                                ].map((feature, idx) => (
+                                    <motion.div
+                                        key={feature.title}
+                                        initial={{ opacity: 0, y: 30 }}
+                                        whileInView={{ opacity: 1, y: 0 }}
+                                        viewport={{ once: true, margin: "-10%" }}
+                                        transition={{ duration: 1.0, delay: idx * 0.15, ease: smooth }}
+                                        className="group bg-white border border-gray-100 p-6 md:p-8 rounded-[2rem] flex flex-col md:flex-row items-start md:items-center gap-6 shadow-sm hover:shadow-md transition-shadow duration-500"
+                                    >
+                                        <div className="w-14 h-14 rounded-2xl bg-gray-50 flex items-center justify-center text-brand-trust flex-shrink-0 group-hover:scale-110 transition-transform duration-500">
+                                            {feature.icon}
+                                        </div>
+                                        <div>
+                                            <h3 className="text-xl font-bold text-gray-900 mb-2">
+                                                {feature.title}
+                                            </h3>
+                                            <p className="text-gray-500 font-light leading-relaxed">
+                                                {feature.desc}
+                                            </p>
+                                        </div>
+                                    </motion.div>
+                                ))}
+                            </div>
 
-                                    <div className="space-y-5">
-                                        {[
-                                            { icon: "🩺", text: "입양 전 전문 수의사 종합 검진 완료" },
-                                            { icon: "🧠", text: "맞춤형 행동 교정 및 사회화 교육" },
-                                            { icon: "💌", text: "입양 후 평생 AS 시스템 운영" },
-                                        ].map((item) => (
-                                            <div key={item.text} className="flex items-center gap-4 p-4 bg-gray-50 rounded-2xl border border-gray-100">
-                                                <span className="text-2xl">{item.icon}</span>
-                                                <p className="text-base font-medium text-gray-700">{item.text}</p>
-                                            </div>
-                                        ))}
-                                    </div>
-                                </div>
-                            </motion.div>
                         </div>
                     </div>
                 </section>
 
-                {/* ═══ 4. STATS — Large number cards with descriptions ═══ */}
-                <section className="relative z-10 bg-white py-24">
-                    <div className="max-w-[90rem] mx-auto px-6 sm:px-8 lg:px-12">
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                            {stats.map((stat, i) => (
-                                <motion.div
-                                    key={stat.label}
-                                    initial={{ opacity: 0, y: 50, scale: 0.95 }}
-                                    whileInView={{ opacity: 1, y: 0, scale: 1 }}
-                                    viewport={{ once: false }}
-                                    transition={{ duration: 1, delay: i * 0.1, ease: smooth }}
-                                    className="group relative overflow-hidden rounded-3xl bg-gray-50 border border-gray-100 p-10 hover:shadow-xl hover:-translate-y-1 transition-all duration-500"
-                                >
-                                    <div className="text-6xl lg:text-7xl font-black text-brand-trust mb-3 tracking-tight">{stat.value}</div>
-                                    <div className="text-lg font-bold text-gray-900 mb-2">{stat.label}</div>
-                                    <div className="text-sm text-gray-400 font-light">{stat.desc}</div>
-                                    {/* Decorative corner */}
-                                    <div className="absolute -bottom-6 -right-6 w-24 h-24 rounded-full bg-brand-trust/5 group-hover:bg-brand-trust/10 transition-colors duration-500" />
-                                </motion.div>
-                            ))}
-                        </div>
-                    </div>
-                </section>
 
                 {/* ═══ 5. CORE VALUES — Bento Grid Layout ═══ */}
                 <section className="relative z-10 bg-gray-50 py-24 overflow-hidden">
@@ -447,29 +426,45 @@ export default function AboutPage() {
                             </h2>
                         </motion.div>
 
-                        {/* Bento Grid */}
-                        <div className="grid grid-cols-1 md:grid-cols-4 gap-5 auto-rows-[280px]">
+                        {/* Vertical Staggered Editorial Layout */}
+                        <div className="flex flex-col gap-12 lg:gap-20 max-w-4xl mx-auto px-4 md:px-0 relative">
+                            {/* Very subtle timeline vertical line */}
+                            <div className="absolute left-4 md:left-[9.5rem] top-0 bottom-0 w-px bg-gradient-to-b from-gray-100 via-gray-200 to-transparent hidden md:block" />
+
                             {values.map((v, i) => (
                                 <motion.div
                                     key={i}
-                                    initial={{ opacity: 0, y: 40, scale: 0.96 }}
-                                    whileInView={{ opacity: 1, y: 0, scale: 1 }}
-                                    viewport={{ once: false }}
-                                    transition={{ duration: 1, delay: i * 0.1, ease: smooth }}
-                                    className={`group relative overflow-hidden rounded-3xl ${v.size} cursor-default`}
+                                    initial={{ opacity: 0, y: 120 }}
+                                    whileInView={{ opacity: 1, y: 0 }}
+                                    viewport={{ once: true, margin: "-10%" }}
+                                    transition={{
+                                        duration: 1.4,
+                                        ease: smooth,
+                                    }}
+                                    className="relative flex flex-col md:flex-row items-start md:items-center gap-6 md:gap-12 pl-12 md:pl-0"
                                 >
-                                    {/* Photo background */}
-                                    <ImagePlaceholder width="100%" height="100%" text={v.imgAlt} className="!rounded-none !border-none !bg-gray-200 absolute inset-0" />
-                                    {/* Dark overlay */}
-                                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-black/10 group-hover:from-black/90 group-hover:via-black/50 transition-all duration-500" />
+                                    {/* Oversized Subtle Number */}
+                                    <div className="absolute -left-4 md:-left-8 -top-6 md:-top-10 text-[6rem] md:text-[8rem] font-black text-gray-100 select-none -z-10 leading-none tracking-tighter mix-blend-multiply">
+                                        {v.num}
+                                    </div>
 
-                                    {/* Content */}
-                                    <div className="absolute inset-0 flex flex-col justify-end p-8">
-                                        <span className="text-[10px] font-bold tracking-[0.25em] uppercase text-white/50 block mb-2">{v.subtitle}</span>
-                                        <h3 className={`text-2xl md:text-3xl font-extrabold mb-3 leading-tight text-transparent bg-clip-text bg-gradient-to-r ${v.accent}`}>
-                                            {v.title}
-                                        </h3>
-                                        <p className="text-white/60 font-light leading-relaxed text-sm break-keep max-w-sm group-hover:text-white/80 transition-colors duration-500">
+                                    {/* Number Indicator on timeline */}
+                                    <div className="hidden md:flex relative z-10 w-12 h-12 rounded-full border border-gray-200 bg-white ml-[7.5rem] items-center justify-center text-sm font-bold text-gray-300 shadow-sm flex-shrink-0">
+                                        {v.num}
+                                    </div>
+
+                                    {/* Text Content */}
+                                    <div className="flex-1 bg-transparent py-4 z-10 relative">
+                                        <div className="inline-flex flex-col mb-4">
+                                            <span className="text-[10px] md:text-xs font-bold tracking-[0.3em] uppercase text-brand-trust block mb-1">
+                                                {v.subtitle}
+                                            </span>
+                                            <h3 className="text-2xl md:text-4xl font-extrabold text-gray-900 leading-tight break-keep">
+                                                {v.title}
+                                            </h3>
+                                        </div>
+
+                                        <p className="text-gray-500 font-light leading-relaxed text-base md:text-lg break-keep max-w-lg">
                                             {v.desc}
                                         </p>
                                     </div>

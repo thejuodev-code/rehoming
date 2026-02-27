@@ -1,7 +1,6 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import Script from 'next/script';
 
 declare global {
     interface Window {
@@ -21,33 +20,66 @@ export default function KakaoMapLocation() {
     const lng = 126.7322;
 
     useEffect(() => {
-        if (!isLoaded || !mapRef.current || !window.kakao) return;
+        if (!mapRef.current) return;
 
-        try {
-            window.kakao.maps.load(() => {
-                const position = new window.kakao.maps.LatLng(lat, lng);
-                const options = {
-                    center: position,
-                    level: 3,
-                };
-                const map = new window.kakao.maps.Map(mapRef.current, options);
+        let intervalId: NodeJS.Timeout;
 
-                // 마커 추가
-                const marker = new window.kakao.maps.Marker({
-                    position: position,
+        const initMap = () => {
+            try {
+                window.kakao.maps.load(() => {
+                    const position = new window.kakao.maps.LatLng(lat, lng);
+                    const options = {
+                        center: position,
+                        level: 3,
+                    };
+                    const map = new window.kakao.maps.Map(mapRef.current, options);
+
+                    // 마커 추가
+                    const marker = new window.kakao.maps.Marker({
+                        position: position,
+                    });
+                    marker.setMap(map);
+
+                    // 인포윈도우(말풍선) 추가
+                    const infowindow = new window.kakao.maps.InfoWindow({
+                        content: '<div style="padding:8px 12px;font-size:14px;font-weight:bold;color:#333;">리호밍센터</div>',
+                    });
+                    infowindow.open(map, marker);
+
+                    setIsLoaded(true);
                 });
-                marker.setMap(map);
+            } catch (error) {
+                console.error("Kakao Map initialization error:", error);
+                setHasError(true);
+            }
+        };
 
-                // 인포윈도우(말풍선) 추가
-                const infowindow = new window.kakao.maps.InfoWindow({
-                    content: '<div style="padding:8px 12px;font-size:14px;font-weight:bold;color:#333;">리호밍센터</div>',
-                });
-                infowindow.open(map, marker);
-            });
-        } catch {
-            setHasError(true);
+        const checkKakaoMap = () => {
+            if (window.kakao && window.kakao.maps) {
+                if (intervalId) clearInterval(intervalId);
+                initMap();
+            }
+        };
+
+        if (window.kakao && window.kakao.maps) {
+            initMap();
+        } else {
+            intervalId = setInterval(checkKakaoMap, 100);
+
+            // Timeout after 10 seconds empty map
+            setTimeout(() => {
+                if (!window.kakao || !window.kakao.maps) {
+                    if (intervalId) clearInterval(intervalId);
+                    setHasError(true);
+                }
+            }, 10000);
         }
-    }, [isLoaded]);
+
+        return () => {
+            if (intervalId) clearInterval(intervalId);
+        };
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
     if (!kakaoAppKey) {
         return (
@@ -74,12 +106,6 @@ export default function KakaoMapLocation() {
 
     return (
         <>
-            <Script
-                src={`//dapi.kakao.com/v2/maps/sdk.js?appkey=${kakaoAppKey}&autoload=false`}
-                strategy="afterInteractive"
-                onLoad={() => setIsLoaded(true)}
-                onError={() => setHasError(true)}
-            />
             <div ref={mapRef} className="w-full h-full" />
             {!isLoaded && (
                 <div className="absolute inset-0 flex flex-col items-center justify-center bg-gray-50">

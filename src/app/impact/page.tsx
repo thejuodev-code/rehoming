@@ -3,8 +3,9 @@ import { useRef } from "react";
 import { motion, useScroll, useTransform } from "framer-motion";
 import Link from "next/link";
 import { useQuery } from "@apollo/client/react";
-import { GET_PROJECTS } from "@/lib/queries";
+import { GET_PROJECTS, GET_SUPPORT_POSTS } from "@/lib/queries";
 import { GetProjectsData } from "@/types/project";
+import { GetSupportPostsResponse } from "@/types/support";
 
 // Shared Premium Animation Variants
 const fadeInUp = {
@@ -47,11 +48,16 @@ const extractFirstImageFromContent = (content?: string) => {
 };
 
 export default function ImpactPage() {
-    const { loading, error, data } = useQuery<GetProjectsData>(GET_PROJECTS, {
+    const { loading: loadingProjects, error: errorProjects, data: projectsData } = useQuery<GetProjectsData>(GET_PROJECTS, {
         variables: { first: 100 }
     });
 
-    const displayActivities = data?.projects?.nodes?.filter((node) => !!node.activityFields?.pintoimpact).map((node) => {
+    const { loading: loadingSupport, error: errorSupport, data: supportData } = useQuery<GetSupportPostsResponse>(GET_SUPPORT_POSTS, {
+        variables: { first: 50 },
+        fetchPolicy: "network-only"
+    });
+
+    const displayActivities = projectsData?.projects?.nodes?.filter((node) => !!node.activityFields?.pintoimpact).map((node) => {
         const rawContent = Reflect.get(node, "content");
         const content = typeof rawContent === "string" ? rawContent : undefined;
 
@@ -63,6 +69,22 @@ export default function ImpactPage() {
             categorySlug: node.projectCategories?.nodes?.[0]?.slug || "",
             image: node.featuredImage?.node?.sourceUrl || extractFirstImageFromContent(content) || "https://images.unsplash.com/photo-1469571486292-0ba58a3f068b?q=80&w=2070&auto=format&fit=crop",
             impact_summary: node.activityFields?.impactSummary || "상세 성과 확인하기"
+        };
+    }) || [];
+
+    const displaySupportPosts = supportData?.supportPosts?.nodes?.map((node) => {
+        const rawDate = new Date(node.date);
+        const dateStr = `${rawDate.getFullYear()}.${String(rawDate.getMonth() + 1).padStart(2, '0')}.${String(rawDate.getDate()).padStart(2, '0')}`;
+
+        return {
+            id: node.databaseId.toString(),
+            slug: node.slug,
+            category: node.supportCategories?.nodes?.[0]?.name || "기타",
+            title: node.title,
+            author: node.author?.node?.name || "관리자",
+            date: dateStr,
+            viewCount: node.supportMeta?.viewCount || 0,
+            isNotice: node.supportMeta?.isNotice || false,
         };
     }) || [];
 
@@ -129,36 +151,28 @@ export default function ImpactPage() {
                 </motion.div>
             </section>
 
-            {/* 2. Impact Stats & Aggregate Achievements */}
-            <section className="relative z-10 bg-white rounded-t-[3rem] md:rounded-t-[5rem] shadow-[0_-40px_80px_rgba(0,0,0,0.15)] -mt-[10vh] pt-24 pb-32">
-                <div className="max-w-[90rem] mx-auto px-6 sm:px-8 lg:px-12">
+
+            {/* 3. Corporate Activities (Alternating Magazine Layout) & Decorative Transition */}
+            <section className="relative z-20 bg-white rounded-t-[3rem] md:rounded-t-[5rem] shadow-[0_-40px_80px_rgba(0,0,0,0.15)] -mt-[10vh] pb-40 overflow-hidden">
+                {/* Decorative Marquee */}
+                <div className="w-full border-b border-gray-100 bg-gray-50/50 py-4 mb-24 overflow-hidden flex whitespace-nowrap">
                     <motion.div
-                        initial={{ opacity: 0, y: 40 }}
-                        whileInView={{ opacity: 1, y: 0 }}
-                        viewport={{ once: true, margin: "-100px" }}
-                        transition={{ duration: 0.8 }}
-                        className="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-12"
+                        animate={{ x: ["0%", "-50%"] }}
+                        transition={{ repeat: Infinity, ease: "linear", duration: 35 }}
+                        className="flex items-center text-sm font-bold tracking-[0.3em] uppercase text-gray-300"
                     >
-                        {[
-                            { label: "누적 구조 활동", count: "342+", desc: "새로운 기회를 얻은 생명들" },
-                            { label: "누적 입양 연계", count: "289+", desc: "따뜻한 가족의 품으로" },
-                            { label: "전문 의료 지원", count: "1,200+", desc: "건강 회복을 위한 헌신" }
-                        ].map((stat) => (
-                            <div key={stat.label} className="flex flex-col items-center text-center p-8 rounded-[2.5rem] bg-gray-50 border border-gray-100 hover:shadow-xl transition-all duration-500 hover:-translate-y-2">
-                                <h3 className="text-5xl md:text-6xl font-black text-brand-trust mb-4 font-mono tracking-tighter">{stat.count}</h3>
-                                <h4 className="text-xl font-bold text-gray-900 mb-2">{stat.label}</h4>
-                                <p className="text-gray-500 font-light">{stat.desc}</p>
-                            </div>
+                        {Array(5).fill("RESCUE & HEAL • SECOND CHANCES • MEDICAL CARE • BEHAVIORAL REHABILITATION • FIND LOVING HOMES • LIFETIME COMMITMENT • ").map((text, i) => (
+                            <span key={i} className="mx-4">{text}</span>
                         ))}
                     </motion.div>
                 </div>
-            </section>
 
-            {/* 3. Corporate Activities (Alternating Magazine Layout) */}
-            <section className="relative z-20 bg-white pb-40">
                 <div className="max-w-[90rem] mx-auto px-6 sm:px-8 lg:px-12">
 
-                    <div className="text-center mb-24">
+                    <div className="text-center mb-20">
+                        <span className="inline-block py-1.5 px-4 rounded-full bg-blue-50 text-brand-trust text-xs font-bold tracking-widest uppercase mb-4">
+                            Our Footprints
+                        </span>
                         <h2 className="text-4xl md:text-5xl font-extrabold text-gray-900 mb-6 tracking-tight">
                             주요 <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600">활동 및 캠페인</span>
                         </h2>
@@ -227,6 +241,136 @@ export default function ImpactPage() {
                             더 많은 활동 보기
                             <svg className="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
                         </Link>
+                    </div>
+                </div>
+            </section>
+
+            {/* 3.5 Support/Volunteer Board Section */}
+            <section id="support-board" className="relative z-20 bg-gray-50 rounded-t-[3rem] md:rounded-t-[5rem] shadow-[0_-40px_80px_rgba(0,0,0,0.15)] -mt-10 py-32 overflow-hidden">
+                <div className="max-w-[80rem] mx-auto px-4 sm:px-6 lg:px-8">
+                    <div className="text-center mb-16">
+                        <span className="inline-block py-1.5 px-4 rounded-full bg-blue-100 text-blue-700 text-xs font-bold tracking-widest uppercase mb-4">
+                            Support & Volunteer
+                        </span>
+                        <h2 className="text-4xl md:text-5xl font-extrabold text-gray-900 mb-6 tracking-tight">
+                            후원, 봉사 <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600">안내 게시판</span>
+                        </h2>
+                        <p className="text-xl text-gray-500 font-light max-w-2xl mx-auto break-keep">
+                            당신의 작은 실천이 만들어내는 큰 변화, 함께해주세요.
+                        </p>
+                    </div>
+
+                    <div className="w-full bg-white rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-100 overflow-hidden">
+
+                        {/* Board Utils (Search & Filter) */}
+                        <div className="flex flex-col sm:flex-row justify-between items-center px-6 md:px-10 py-8 border-b border-gray-100 gap-4">
+                            <div className="text-sm font-medium text-gray-500">
+                                총 <span className="text-brand-trust font-bold">{displaySupportPosts.length}</span>개의 글이 있습니다.
+                            </div>
+                            <div className="flex items-center gap-2 w-full sm:w-auto">
+                                <select className="bg-gray-50 border border-gray-200 text-gray-700 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5 outline-none font-medium">
+                                    <option>전체</option>
+                                    <option>공지</option>
+                                    <option>후원</option>
+                                    <option>봉사</option>
+                                    <option>소식</option>
+                                </select>
+                                <div className="relative w-full sm:w-64">
+                                    <input type="text" className="bg-gray-50 border border-gray-200 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 pl-4 outline-none transition-colors" placeholder="검색어를 입력하세요" />
+                                    <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                                        <svg className="w-4 h-4 text-gray-400" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 20">
+                                            <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z" />
+                                        </svg>
+                                    </div>
+                                </div>
+                                <button className="bg-gray-900 text-white px-5 py-2.5 rounded-lg text-sm font-bold hover:bg-gray-800 transition-colors whitespace-nowrap hidden md:block">
+                                    검색
+                                </button>
+                            </div>
+                        </div>
+
+                        {/* Board Table */}
+                        <div className="overflow-x-auto">
+                            <table className="w-full text-left text-gray-600">
+                                <thead className="bg-gray-50/80 border-b border-gray-100 text-[14px]">
+                                    <tr>
+                                        <th scope="col" className="px-6 py-5 font-bold text-center w-24 hidden sm:table-cell">번호</th>
+                                        <th scope="col" className="px-6 py-5 font-bold text-center w-28 hidden md:table-cell">분류</th>
+                                        <th scope="col" className="px-6 py-5 font-bold text-center">제목</th>
+                                        <th scope="col" className="px-6 py-5 font-bold text-center w-32 hidden md:table-cell">작성자</th>
+                                        <th scope="col" className="px-6 py-5 font-bold text-center w-28 hidden sm:table-cell">작성일</th>
+                                        <th scope="col" className="px-6 py-5 font-bold text-center w-24 hidden lg:table-cell">조회수</th>
+                                    </tr>
+                                </thead>
+                                <tbody className="divide-y divide-gray-100 text-[15px]">
+                                    {loadingSupport ? (
+                                        <tr>
+                                            <td colSpan={6} className="px-6 py-10 text-center text-gray-400 font-medium">로딩 중...</td>
+                                        </tr>
+                                    ) : errorSupport ? (
+                                        <tr>
+                                            <td colSpan={6} className="px-6 py-10 text-center text-red-500 font-medium">
+                                                <div className="font-bold mb-2">데이터를 불러오는 중 오류가 발생했습니다.</div>
+                                                <pre className="text-xs text-left bg-red-50 p-4 rounded overflow-auto whitespace-pre-wrap">{JSON.stringify(errorSupport, null, 2)}</pre>
+                                            </td>
+                                        </tr>
+                                    ) : displaySupportPosts.length === 0 ? (
+                                        <tr>
+                                            <td colSpan={6} className="px-6 py-10 text-center text-gray-400 font-medium">등록된 게시글이 없습니다.</td>
+                                        </tr>
+                                    ) : (
+                                        displaySupportPosts.map((post, index, array) => (
+                                            <tr key={post.id} className={`group hover:bg-blue-50/30 transition-colors duration-200 cursor-pointer ${post.isNotice ? 'bg-orange-50/30' : ''}`}>
+                                                <td className="px-6 py-5 text-center hidden sm:table-cell">
+                                                    {post.isNotice ? (
+                                                        <span className="inline-flex items-center justify-center bg-orange-100 text-orange-600 text-[11px] font-bold px-2 py-0.5 rounded leading-none pt-[3px]">공지</span>
+                                                    ) : (
+                                                        <span className="text-gray-400 font-medium">{array.length - index}</span>
+                                                    )}
+                                                </td>
+                                                <td className="px-6 py-5 text-center hidden md:table-cell">
+                                                    <span className={`text-[13px] font-bold ${post.category === '공지' ? 'text-orange-600' : post.category === '후원' ? 'text-blue-600' : post.category === '봉사' ? 'text-green-600' : 'text-gray-500'}`}>
+                                                        {post.category}
+                                                    </span>
+                                                </td>
+                                                <td className="px-6 py-5">
+                                                    <div className="flex items-center gap-2 mb-1 md:hidden">
+                                                        {post.isNotice && <span className="bg-orange-100 text-orange-600 text-[10px] font-bold px-1.5 py-0.5 rounded leading-none pt-[3px]">공지</span>}
+                                                        <span className="text-brand-trust text-[12px] font-bold">{post.category}</span>
+                                                    </div>
+                                                    <Link href={`/support/${post.slug}`} className={`block truncate max-w-[240px] sm:max-w-md lg:max-w-xl font-medium transition-colors ${post.isNotice ? 'text-gray-900 font-bold' : 'text-gray-800 group-hover:text-brand-trust'}`}>
+                                                        {post.title}
+                                                    </Link>
+                                                    <div className="flex md:hidden items-center gap-3 mt-1.5 text-[12px] text-gray-400">
+                                                        <span>{post.author}</span>
+                                                        <span className="w-[3px] h-[3px] rounded-full bg-gray-300"></span>
+                                                        <span>{post.date}</span>
+                                                    </div>
+                                                </td>
+                                                <td className="px-6 py-5 text-center hidden md:table-cell font-medium text-gray-500">{post.author}</td>
+                                                <td className="px-6 py-5 text-center hidden sm:table-cell text-sm text-gray-400">{post.date}</td>
+                                                <td className="px-6 py-5 text-center hidden lg:table-cell text-sm text-gray-400">{post.viewCount.toLocaleString()}</td>
+                                            </tr>
+                                        ))
+                                    )}
+                                </tbody>
+                            </table>
+                        </div>
+
+                        {/* Pagination */}
+                        <div className="flex items-center justify-center py-10 border-t border-gray-100 bg-white">
+                            <nav aria-label="Page navigation" className="flex items-center gap-1">
+                                <button className="w-10 h-10 flex items-center justify-center rounded-full text-gray-400 hover:text-brand-trust hover:bg-blue-50 transition-colors disabled:opacity-50 disabled:hover:bg-transparent disabled:hover:text-gray-400">
+                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7"></path></svg>
+                                </button>
+                                <button className="w-10 h-10 flex items-center justify-center rounded-full bg-brand-trust text-white font-bold shadow-md shadow-brand-trust/20">1</button>
+                                <button className="w-10 h-10 flex items-center justify-center rounded-full text-gray-500 font-medium hover:text-brand-trust hover:bg-blue-50 transition-colors">2</button>
+                                <button className="w-10 h-10 flex items-center justify-center rounded-full text-gray-500 font-medium hover:text-brand-trust hover:bg-blue-50 transition-colors">3</button>
+                                <button className="w-10 h-10 flex items-center justify-center rounded-full text-gray-400 hover:text-brand-trust hover:bg-blue-50 transition-colors">
+                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7"></path></svg>
+                                </button>
+                            </nav>
+                        </div>
                     </div>
                 </div>
             </section>

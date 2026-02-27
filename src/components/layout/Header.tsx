@@ -16,18 +16,20 @@ const navigation = [
     name: "입양", href: "/process",
     subItems: [
       { name: "입양 절차", href: "/process", desc: "입양 전 필수 확인 사항" },
-      { name: "입양 공고", href: "/adopt", desc: "새로운 가족을 찾는 천사들" },
-      { name: "입양 후기", href: "/reviews", desc: "가족이 된 아이들의 따뜻한 이야기" }
+      { name: "입양 공고", href: "/adopt", desc: "새로운 가족을 찾는 천사들" }
     ]
   },
   {
     name: "지원 사업", href: "/impact",
-    subItems: [] // 서브메뉴 제거 (다일 페이지)
+    subItems: [
+      { name: "센터 활동", href: "/impact", desc: "리호밍센터의 주요 활동 및 캠페인" },
+      { name: "후원, 봉사 안내", href: "/impact#support-board", desc: "생명을 살리는 가치있는 일에 동참해주세요" }
+    ]
   },
   {
-    name: "후원 및 봉사", href: "/donate",
-    subItems: [] // 서브메뉴 제거 (단일 페이지)
-  },
+    name: "입양 후기", href: "/reviews",
+    subItems: []
+  }
 ];
 
 export default function Header() {

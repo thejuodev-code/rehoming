@@ -5,6 +5,7 @@ import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import ChannelTalk from "@/components/common/ChannelTalk";
 import Providers from "@/components/common/Providers";
+import Script from "next/script";
 
 const notoSansKr = Noto_Sans_KR({
   subsets: ["latin"],
@@ -23,9 +24,18 @@ export default function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
+  const kakaoAppKey = process.env.NEXT_PUBLIC_KAKAO_MAP_CLIENT_ID || '';
 
   return (
     <html lang="ko" className={notoSansKr.variable}>
+      <head>
+        {kakaoAppKey && (
+          <Script
+            src={`//dapi.kakao.com/v2/maps/sdk.js?appkey=${kakaoAppKey}&autoload=false`}
+            strategy="lazyOnload"
+          />
+        )}
+      </head>
       <body
         className="font-sans antialiased flex flex-col min-h-screen bg-[#FAF9F6]"
       >

@@ -36,8 +36,7 @@ export default function Footer() {
                             <li><Link href="/process" className="hover:text-white hover:translate-x-1 inline-block transition-all">입양 절차</Link></li>
                             <li><Link href="/adopt" className="hover:text-white hover:translate-x-1 inline-block transition-all">입양 공고</Link></li>
                             <li><Link href="/reviews" className="hover:text-white hover:translate-x-1 inline-block transition-all">입양 후기</Link></li>
-                            <li><Link href="/impact" className="hover:text-white hover:translate-x-1 inline-block transition-all">지원 사업</Link></li>
-                            <li><Link href="/donate" className="hover:text-brand-warmth hover:translate-x-1 inline-block transition-all font-medium text-amber-500">후원 안내 <span className="ml-1 text-[10px] bg-brand-warmth/20 px-2 py-0.5 rounded-full text-brand-warmth">♥</span></Link></li>
+
                         </ul>
                     </div>
 

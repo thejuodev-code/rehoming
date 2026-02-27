@@ -224,8 +224,8 @@ export default function ProcessPage() {
                                     원하던 곳에서 살아가는 것도 할 수 없지만.
                                 </p>
                                 <p>
-                                    좋은 보호자를 만나 제 2의 집에서 행복하게 살아갈 수 있도록,{" "}
-                                    <strong className="text-brand-trust font-semibold">리호밍센터가 돕겠습니다.</strong>
+                                    좋은 보호자를 만나 제 2의 집에서 행복하게 살아갈 수 있도록,
+                                    <strong className="text-brand-trust font-semibold block">리호밍센터가 돕겠습니다.</strong>
                                 </p>
                             </div>
                         </motion.div>

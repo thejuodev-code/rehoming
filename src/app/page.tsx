@@ -5,8 +5,8 @@ import { motion, useScroll, useTransform } from "framer-motion";
 import Link from "next/link";
 import Image from "next/image";
 import { useQuery } from '@apollo/client/react';
-import { GET_POSTS } from '@/lib/queries';
-import { GetPostsData } from '@/types/graphql';
+import { GET_ANIMALS } from '@/lib/queries';
+import { GetAnimalsData, AnimalPost } from '@/types/graphql';
 
 import ImagePlaceholder from "@/components/common/ImagePlaceholder";
 
@@ -36,7 +36,7 @@ const staggerContainer = {
 };
 
 export default function Home() {
-  const { data, loading } = useQuery<GetPostsData>(GET_POSTS, {
+  const { data, loading } = useQuery<GetAnimalsData>(GET_ANIMALS, {
     variables: { first: 3 }
   });
 
@@ -369,12 +369,30 @@ export default function Home() {
                 <div key={item} className="animate-pulse bg-white rounded-[3rem] h-[500px] shadow-sm" />
               ))
             ) : (
-              data?.posts?.nodes
-                ?.filter((post: any) => !post.categories?.nodes?.some((cat: any) => cat.slug === 'activity'))
-                .slice(0, 3)
-                .map((post: any) => (
+              data?.animals?.nodes
+                ?.slice(0, 3)
+                .map((animal: AnimalPost) => {
+                  const statusNode = animal.animalStatuses?.nodes?.[0];
+                  const statusSlug = statusNode?.slug || 'available';
+                  const statusName = statusNode?.name || '입양 가능';
+                  const isUrgent = statusSlug === 'urgent' || statusName.includes('긴급');
+                  const isAdopted = statusSlug === 'adopted' || statusName.includes('입양 완료');
+                  const isAvailable = statusSlug === 'available' || statusName.includes('입양 가능');
+                  
+                  const acfImage = animal.animalFields?.image?.node?.sourceUrl;
+                  const featuredImage = animal.featuredImage?.node?.sourceUrl;
+                  const contentMatch = animal.content?.match(/<img[^>]+src="([^"]+)"/);
+                  const contentImage = contentMatch ? contentMatch[1] : null;
+                  const fallbackImage = 'https://images.unsplash.com/photo-1543466835-00a7907e9de1?q=80&w=1974&auto=format&fit=crop';
+                  const imageUrl = acfImage || featuredImage || contentImage || fallbackImage;
+                  
+                  const age = animal.animalFields?.age || '나이 미상';
+                  const gender = animal.animalFields?.gender || '';
+                  const breed = animal.animalFields?.breed || '';
+                  
+                  return (
                   <motion.div
-                    key={post.id}
+                    key={animal.databaseId}
                     variants={fadeInUp as any}
                     whileHover={{ y: -20, scale: 1.02 }}
                     transition={{ type: "spring", stiffness: 300, damping: 25 }}
@@ -386,37 +404,49 @@ export default function Home() {
                         transition={{ duration: 0.6 }}
                         className="w-full h-full"
                       >
-                        {post.featuredImage?.node?.sourceUrl ? (
-                          <img
-                            src={post.featuredImage.node.sourceUrl}
-                            alt={post.title}
-                            className="w-full h-full object-cover"
-                          />
-                        ) : (
-                          <ImagePlaceholder width="100%" height="100%" text={post.title} className="!rounded-none border-none !bg-gray-100" />
-                        )}
+                        <img
+                          src={imageUrl}
+                          alt={animal.title}
+                          className="w-full h-full object-cover"
+                        />
                       </motion.div>
-                      <div className="absolute top-6 left-6 z-10 bg-white/90 backdrop-blur-md px-5 py-2 rounded-full text-sm font-bold text-gray-900 shadow-lg border border-white/50">
-                        입양 대기 중
+                      <div className={`absolute top-6 left-6 z-10 backdrop-blur-md px-5 py-2 rounded-full text-sm font-bold shadow-lg ${
+                        isUrgent ? 'bg-rose-500/95 text-white' :
+                        isAdopted ? 'bg-slate-700/90 text-slate-200' :
+                        isAvailable ? 'bg-green-500/95 text-white' :
+                        'bg-gray-800/95 text-white'
+                      }`}>
+                        {isUrgent && <span className="animate-pulse mr-2">🚨</span>}
+                        {statusName}
                       </div>
                     </div>
 
                     <div className="p-10 md:p-12 flex-grow flex flex-col">
-                      <div className="flex justify-between items-start mb-6">
-                        <h3 className="text-3xl font-bold text-gray-900">{post.title}</h3>
-                        <span className="flex items-center text-sm font-bold text-brand-trust bg-blue-50/80 px-4 py-2 rounded-xl">
-                          #입양가능
+                      <div className="flex justify-between items-start mb-4">
+                        <h3 className="text-3xl font-bold text-gray-900">{animal.title}</h3>
+                        <span className="flex items-center text-sm font-bold text-gray-500 bg-gray-100 px-4 py-2 rounded-xl">
+                          {age}
                         </span>
                       </div>
 
-                      <div
-                        className="text-lg text-gray-500 font-light leading-relaxed mb-10 flex-grow break-keep line-clamp-2"
-                        dangerouslySetInnerHTML={{ __html: post.excerpt }}
-                      />
+                      <ul className="space-y-2 mb-6 text-sm text-gray-600 font-medium">
+                        {breed && (
+                          <li className="flex items-center gap-2">
+                            <span className="w-5 text-center">🐾</span>
+                            {breed}
+                          </li>
+                        )}
+                        {gender && (
+                          <li className="flex items-center gap-2">
+                            <span className="w-5 text-center">🏷️</span>
+                            {gender}
+                          </li>
+                        )}
+                      </ul>
 
                       <div className="pt-8 border-t border-gray-100/80 mt-auto">
                         <Link
-                          href={`/adopt/${post.slug || post.id}`}
+                          href={`/adopt/${animal.slug}`}
                           className="flex items-center justify-between text-gray-900 font-semibold text-lg group-hover:text-brand-trust transition-colors"
                         >
                           상세 프로필 확인
@@ -427,7 +457,7 @@ export default function Home() {
                       </div>
                     </div>
                   </motion.div>
-                ))
+                );})
             )}
           </motion.div>
 
