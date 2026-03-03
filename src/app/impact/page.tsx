@@ -155,14 +155,14 @@ export default function ImpactPage() {
             {/* 3. Corporate Activities (Alternating Magazine Layout) & Decorative Transition */}
             <section className="relative z-20 bg-white rounded-t-[3rem] md:rounded-t-[5rem] shadow-[0_-40px_80px_rgba(0,0,0,0.15)] -mt-[10vh] pb-40 overflow-hidden">
                 {/* Decorative Marquee */}
-                <div className="w-full border-b border-gray-100 bg-gray-50/50 py-4 mb-24 overflow-hidden flex whitespace-nowrap">
+                <div className="w-full bg-black border-y border-gray-900 py-6 mt-8 mb-20 overflow-hidden flex whitespace-nowrap shadow-[0_10px_30px_rgba(0,0,0,0.1)]">
                     <motion.div
                         animate={{ x: ["0%", "-50%"] }}
-                        transition={{ repeat: Infinity, ease: "linear", duration: 35 }}
-                        className="flex items-center text-sm font-bold tracking-[0.3em] uppercase text-gray-300"
+                        transition={{ repeat: Infinity, ease: "linear", duration: 25 }}
+                        className="flex items-center text-lg md:text-2xl font-black tracking-[0.2em] md:tracking-[0.3em] uppercase text-blue-500"
                     >
-                        {Array(5).fill("RESCUE & HEAL • SECOND CHANCES • MEDICAL CARE • BEHAVIORAL REHABILITATION • FIND LOVING HOMES • LIFETIME COMMITMENT • ").map((text, i) => (
-                            <span key={i} className="mx-4">{text}</span>
+                        {Array(16).fill("REHOMING CENTER • ").map((text, i) => (
+                            <span key={i} className="mx-6">{text}</span>
                         ))}
                     </motion.div>
                 </div>
