@@ -3,7 +3,7 @@ import { useRef } from "react";
 import { motion, useScroll, useTransform } from "framer-motion";
 import Link from "next/link";
 import { useQuery } from "@apollo/client/react";
-import { GET_PROJECTS, GET_SUPPORT_POSTS } from "@/lib/queries";
+import { GET_PROJECTS, GET_SUPPORT_POSTS_FOR_IMPACT } from "@/lib/queries";
 import { GetProjectsData } from "@/types/project";
 import { GetSupportPostsResponse } from "@/types/support";
 
@@ -49,12 +49,14 @@ const extractFirstImageFromContent = (content?: string) => {
 
 export default function ImpactPage() {
     const { loading: loadingProjects, error: errorProjects, data: projectsData } = useQuery<GetProjectsData>(GET_PROJECTS, {
-        variables: { first: 100 }
+        variables: { first: 100 },
+        context: { skipAuth: true }
     });
 
-    const { loading: loadingSupport, error: errorSupport, data: supportData } = useQuery<GetSupportPostsResponse>(GET_SUPPORT_POSTS, {
+    const { loading: loadingSupport, error: errorSupport, data: supportData } = useQuery<GetSupportPostsResponse>(GET_SUPPORT_POSTS_FOR_IMPACT, {
         variables: { first: 50 },
-        fetchPolicy: "network-only"
+        fetchPolicy: "network-only",
+        context: { skipAuth: true }
     });
 
     const displayActivities = projectsData?.projects?.nodes?.filter((node) => !!node.activityFields?.pintoimpact).map((node) => {
@@ -161,8 +163,8 @@ export default function ImpactPage() {
                         transition={{ repeat: Infinity, ease: "linear", duration: 25 }}
                         className="flex items-center text-lg md:text-2xl font-black tracking-[0.2em] md:tracking-[0.3em] uppercase text-blue-500"
                     >
-                        {Array(16).fill("REHOMING CENTER • ").map((text, i) => (
-                            <span key={i} className="mx-6">{text}</span>
+                        {Array.from({ length: 16 }, (_, i) => `REHOMING CENTER • ${i + 1}`).map((text) => (
+                            <span key={text} className="mx-6">REHOMING CENTER • </span>
                         ))}
                     </motion.div>
                 </div>
@@ -228,7 +230,7 @@ export default function ImpactPage() {
                                             className="inline-flex items-center text-brand-trust font-bold text-lg group/link"
                                         >
                                             자세히 보기
-                                            <svg className="w-5 h-5 ml-2 group-hover/link:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M9 5l7 7-7 7"></path></svg>
+                                            <svg className="w-5 h-5 ml-2 group-hover/link:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M9 5l7 7-7 7"></path></svg>
                                         </Link>
                                     </div>
                                 </motion.div>
@@ -283,7 +285,7 @@ export default function ImpactPage() {
                                         </svg>
                                     </div>
                                 </div>
-                                <button className="bg-gray-900 text-white px-5 py-2.5 rounded-lg text-sm font-bold hover:bg-gray-800 transition-colors whitespace-nowrap hidden md:block">
+                                <button type="button" className="bg-gray-900 text-white px-5 py-2.5 rounded-lg text-sm font-bold hover:bg-gray-800 transition-colors whitespace-nowrap hidden md:block">
                                     검색
                                 </button>
                             </div>
@@ -360,14 +362,14 @@ export default function ImpactPage() {
                         {/* Pagination */}
                         <div className="flex items-center justify-center py-10 border-t border-gray-100 bg-white">
                             <nav aria-label="Page navigation" className="flex items-center gap-1">
-                                <button className="w-10 h-10 flex items-center justify-center rounded-full text-gray-400 hover:text-brand-trust hover:bg-blue-50 transition-colors disabled:opacity-50 disabled:hover:bg-transparent disabled:hover:text-gray-400">
-                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7"></path></svg>
+                                <button type="button" className="w-10 h-10 flex items-center justify-center rounded-full text-gray-400 hover:text-brand-trust hover:bg-blue-50 transition-colors disabled:opacity-50 disabled:hover:bg-transparent disabled:hover:text-gray-400">
+                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7"></path></svg>
                                 </button>
-                                <button className="w-10 h-10 flex items-center justify-center rounded-full bg-brand-trust text-white font-bold shadow-md shadow-brand-trust/20">1</button>
-                                <button className="w-10 h-10 flex items-center justify-center rounded-full text-gray-500 font-medium hover:text-brand-trust hover:bg-blue-50 transition-colors">2</button>
-                                <button className="w-10 h-10 flex items-center justify-center rounded-full text-gray-500 font-medium hover:text-brand-trust hover:bg-blue-50 transition-colors">3</button>
-                                <button className="w-10 h-10 flex items-center justify-center rounded-full text-gray-400 hover:text-brand-trust hover:bg-blue-50 transition-colors">
-                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7"></path></svg>
+                                <button type="button" className="w-10 h-10 flex items-center justify-center rounded-full bg-brand-trust text-white font-bold shadow-md shadow-brand-trust/20">1</button>
+                                <button type="button" className="w-10 h-10 flex items-center justify-center rounded-full text-gray-500 font-medium hover:text-brand-trust hover:bg-blue-50 transition-colors">2</button>
+                                <button type="button" className="w-10 h-10 flex items-center justify-center rounded-full text-gray-500 font-medium hover:text-brand-trust hover:bg-blue-50 transition-colors">3</button>
+                                <button type="button" className="w-10 h-10 flex items-center justify-center rounded-full text-gray-400 hover:text-brand-trust hover:bg-blue-50 transition-colors">
+                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7"></path></svg>
                                 </button>
                             </nav>
                         </div>

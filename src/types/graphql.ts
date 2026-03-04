@@ -148,6 +148,22 @@ export interface GetAnimalsData {
     };
 }
 
+export interface AnimalTaxonomyTerm {
+    id: string;
+    databaseId: number;
+    slug: string;
+    name: string;
+}
+
+export interface GetAnimalTaxonomiesData {
+    animalTypes: {
+        nodes: AnimalTaxonomyTerm[];
+    };
+    animalStatuses: {
+        nodes: AnimalTaxonomyTerm[];
+    };
+}
+
 // ==========================================
 // Review (입양 후기) Types — 관리자 직접 등록 방식
 // ==========================================

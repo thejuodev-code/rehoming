@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { motion } from "framer-motion";
 
-import { mockPosts } from "../../lib/mockPosts";
+import { mockPosts } from "@/lib/mockPosts";
 
 export default function SupportPage() {
     return (

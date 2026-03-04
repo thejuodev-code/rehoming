@@ -177,6 +177,75 @@ export const GET_ANIMALS = gql`
   }
 `;
 
+export const GET_ADMIN_ANIMALS = gql`
+  query GetAdminAnimals($first: Int = 100) {
+    animals(first: $first, where: { stati: [PUBLISH, DRAFT, PENDING, PRIVATE] }) {
+      nodes {
+        databaseId
+        title
+        excerpt
+        content
+        slug
+        date
+        featuredImage {
+          node {
+            sourceUrl
+          }
+        }
+        animalTypes {
+          nodes {
+            name
+            slug
+          }
+        }
+        animalStatuses {
+          nodes {
+            name
+            slug
+          }
+        }
+        animalFields {
+          age
+          breed
+          gender
+          hashtags
+          weight
+          rescueDate
+          rescueLocation
+          personality
+          medicalHistory
+          image {
+            node {
+              sourceUrl
+            }
+          }
+        }
+      }
+    }
+  }
+`;
+
+export const GET_ANIMAL_TAXONOMIES = gql`
+  query GetAnimalTaxonomies {
+    animalTypes(first: 100) {
+      nodes {
+        id
+        databaseId
+        slug
+        name
+      }
+    }
+    animalStatuses(first: 100) {
+      nodes {
+        id
+        databaseId
+        slug
+        name
+      }
+    }
+  }
+`;
+
 export const GET_ANIMAL_BY_SLUG = gql`
   query GetAnimalBySlug($id: ID!) {
     animal(id: $id, idType: SLUG) {
@@ -315,6 +384,34 @@ export const GET_SUPPORT_POSTS = gql`
               title
             }
           }
+        }
+      }
+    }
+  }
+`;
+
+export const GET_SUPPORT_POSTS_FOR_IMPACT = gql`
+  query GetSupportPostsForImpact($first: Int = 50) {
+    supportPosts(first: $first, where: { orderby: { field: DATE, order: DESC } }) {
+      nodes {
+        databaseId
+        title
+        slug
+        date
+        author {
+          node {
+            name
+          }
+        }
+        supportCategories {
+          nodes {
+            name
+            slug
+          }
+        }
+        supportMeta {
+          isNotice
+          viewCount
         }
       }
     }

@@ -2,7 +2,7 @@
 import { useRef } from "react";
 import { motion, useScroll, useTransform } from "framer-motion";
 import Link from "next/link";
-import ImagePlaceholder from "@/components/common/ImagePlaceholder";
+import Image from "next/image";
 
 // Shared Premium Animation Variants
 const fadeInUp = {
@@ -131,34 +131,36 @@ export default function ProcessPage() {
                 </motion.div>
             </section>
 
-            {/* 2. No-Fee Philosophy Banner */}
-            <section className="relative z-10 bg-white rounded-t-[3rem] md:rounded-t-[5rem] shadow-[0_-40px_80px_rgba(0,0,0,0.15)] -mt-[10vh] pt-20 pb-0">
-                <div className="max-w-[90rem] mx-auto px-6 sm:px-8 lg:px-12">
-                    <motion.div
-                        initial={{ opacity: 0, y: 40 }}
-                        whileInView={{ opacity: 1, y: 0 }}
-                        viewport={{ once: true, margin: "-100px" }}
-                        transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
-                        className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-gray-900 via-blue-950 to-gray-900 px-8 md:px-16 py-16 md:py-20 text-white"
-                    >
-                        <div className="absolute inset-0 opacity-10 pointer-events-none" style={{ backgroundImage: 'radial-gradient(circle at 20% 50%, #3b82f6 0%, transparent 50%), radial-gradient(circle at 80% 50%, #6366f1 0%, transparent 50%)' }} />
-                        <div className="relative z-10 flex flex-col lg:flex-row items-start lg:items-center gap-10 lg:gap-24">
-                            <div className="flex-shrink-0">
-                                <span className="inline-block text-5xl md:text-6xl font-black text-white/10 select-none tracking-tighter leading-none mb-2">₩0</span>
-                                <p className="text-xs font-bold tracking-[0.3em] uppercase text-brand-trust">입양 비용</p>
-                            </div>
-                            <div className="flex-1 space-y-4">
-                                <h2 className="text-2xl md:text-3xl lg:text-4xl font-extrabold leading-tight break-keep">
-                                    리호밍센터는 <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-300 to-indigo-200">입양비용이 없습니다.</span>
-                                </h2>
-                                <p className="text-white/60 font-light leading-relaxed text-base md:text-lg break-keep max-w-2xl">
-                                    반려동물을 입양할 때 필요한 것은 &lsquo;분양비&rsquo;가 아니라 보호자의 <strong className="text-white/90 font-semibold">준비</strong>입니다.
-                                    리호밍센터는 분양비를 받는 대신, 정확한 절차와 체계적인 시스템으로 올바른 양육 방법을 안내합니다.
-                                </p>
-                            </div>
+            {/* 2. No-Fee Philosophy Banner (Shadcn Dark Card Style) */}
+            <section className="relative w-full max-w-[90rem] mx-auto px-6 sm:px-8 lg:px-12 z-20 my-20">
+                <motion.div
+                    initial={{ opacity: 0, y: 40 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true, margin: "-50px" }}
+                    transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+                    className="relative overflow-hidden rounded-3xl bg-[#020817] shadow-2xl border border-white/5"
+                >
+                    {/* Subtle ambient glow */}
+                    <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 via-transparent to-purple-500/5 pointer-events-none" />
+                    <div className="absolute top-0 left-1/2 -translate-x-1/2 w-1/2 h-px bg-gradient-to-r from-transparent via-blue-500/20 to-transparent" />
+
+                    <div className="relative z-10 max-w-4xl mx-auto px-8 py-10 md:py-14 flex flex-col items-center justify-center text-center">
+                        <div className="inline-flex items-center justify-center px-4 py-1.5 rounded-full bg-blue-500/10 border border-blue-500/20 mb-5">
+                            <span className="text-[12px] font-bold text-blue-400 tracking-widest uppercase">
+                                No Adoption Fee
+                            </span>
                         </div>
-                    </motion.div>
-                </div>
+
+                        <h2 className="text-[24px] md:text-[28px] font-bold text-white tracking-tight leading-snug mb-4">
+                            리호밍센터는 <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-indigo-400">입양비용이 없습니다.</span>
+                        </h2>
+
+                        <h3 className="text-[#94a3b8] text-[15px] md:text-[16px] font-medium leading-[1.7] break-keep max-w-2xl mx-auto">
+                            반려동물을 입양할 때 필요한 것은 '분양비'가 아니라 보호자의 <strong className="text-white font-bold tracking-wide">준비</strong>입니다.
+                            리호밍센터는 분양비를 받는 대신, 정확한 절차와 체계적인 시스템으로 올바른 양육 방법을 안내합니다.
+                        </h3>
+                    </div>
+                </motion.div>
             </section>
 
             {/* 3. Rehoming Meaning Section */}
@@ -175,12 +177,13 @@ export default function ProcessPage() {
                             className="w-full lg:w-5/12 flex-shrink-0"
                         >
                             <div className="relative aspect-[4/5] rounded-[2.5rem] overflow-hidden shadow-2xl shadow-gray-200/60">
-                                {/* 사진을 교체할 자리입니다 — /public/images/ 폴더에 이미지를 넣고 src를 지정해 주세요 */}
-                                <ImagePlaceholder
-                                    width="100%"
-                                    height="100%"
-                                    text="리호밍 대표 사진"
-                                    className="!bg-gray-100 !rounded-none"
+                                {/* 리호밍 대표 사진 교체 */}
+                                <Image
+                                    src="/images/process1.jpg"
+                                    alt="리호밍 대표 사진"
+                                    fill
+                                    className="object-cover"
+                                    sizes="(max-width: 1024px) 100vw, 50vw"
                                 />
                                 {/* RE + HOME 배지 */}
                                 <div className="absolute bottom-6 left-6 right-6 bg-white/90 backdrop-blur-md rounded-2xl px-6 py-4 flex items-center gap-4 shadow-lg border border-white/50">
@@ -279,26 +282,13 @@ export default function ProcessPage() {
                                     transition={{ duration: 1.4, ease: [0.16, 1, 0.3, 1] }}
                                     className="relative w-full lg:w-1/2 min-h-[300px] lg:min-h-0 overflow-hidden"
                                 >
-                                    <ImagePlaceholder
-                                        width="100%"
-                                        height="100%"
-                                        text={s.imgAlt}
-                                        className="!rounded-none !border-none !bg-gray-100 absolute inset-0"
+                                    <Image
+                                        src={`/images/process_grid${i + 1}.jpg`}
+                                        alt={s.imgAlt}
+                                        fill
+                                        className="object-cover"
+                                        sizes="(max-width: 1024px) 100vw, 50vw"
                                     />
-                                    <div
-                                        className={`absolute inset-0 bg-gradient-to-${isEven ? "r" : "l"} from-transparent via-transparent to-white opacity-40 lg:opacity-60`}
-                                    />
-                                    <div className={`absolute top-8 ${isEven ? "left-8" : "right-8"}`}>
-                                        <span
-                                            className="text-[6rem] md:text-[8rem] font-black leading-none select-none"
-                                            style={{
-                                                WebkitTextStroke: "2px rgba(255,255,255,0.4)",
-                                                color: "transparent",
-                                            }}
-                                        >
-                                            {s.num}
-                                        </span>
-                                    </div>
                                 </motion.div>
 
                                 {/* Text Side */}
@@ -337,14 +327,12 @@ export default function ProcessPage() {
             {/* 5. Final Call To Action */}
             <section className="relative py-32 bg-white overflow-hidden">
                 <div className="max-w-4xl mx-auto px-6 text-center z-10 relative">
-                    {/* Photo placeholder for CTA section */}
-                    <div className="w-24 h-24 rounded-full overflow-hidden mx-auto mb-8 shadow-xl ring-4 ring-brand-trust/10">
-                        {/* 사진을 교체할 자리입니다 — /public/images/ 폴더에 이미지를 넣고 src를 지정해 주세요 */}
-                        <ImagePlaceholder
-                            width="100%"
-                            height="100%"
-                            text=""
-                            className="!bg-blue-50 !rounded-none !border-none"
+                    <div className="w-24 h-24 rounded-full overflow-hidden mx-auto mb-8 shadow-xl ring-4 ring-brand-trust/10 relative">
+                        <Image
+                            src="/images/process1.jpg"
+                            alt="리호밍 대표 로고 이미지"
+                            fill
+                            className="object-cover"
                         />
                     </div>
                     <motion.h2

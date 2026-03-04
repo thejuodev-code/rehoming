@@ -2,7 +2,7 @@
 import { useRef, useState, useCallback } from "react";
 import { motion, useScroll, useTransform, AnimatePresence } from "framer-motion";
 import Link from "next/link";
-import ImagePlaceholder from "@/components/common/ImagePlaceholder";
+import Image from "next/image";
 import KakaoMapLocation from "@/components/about/KakaoMapLocation";
 
 /* ─── Shared Animation Easing ─── */
@@ -312,9 +312,19 @@ export default function AboutPage() {
                             transition={{ duration: 1.2, delay: 0.3, ease: smooth }}
                             className="mt-16 grid grid-cols-3 gap-4"
                         >
-                            {["첫 만남", "교감 시간", "새 가족"].map((label, i) => (
-                                <div key={i} className="aspect-[4/3] rounded-2xl overflow-hidden shadow-lg">
-                                    <ImagePlaceholder width="100%" height="100%" text={label} className="!rounded-none !border-none !bg-gray-100" />
+                            {[
+                                { label: "첫 만남", src: "/images/about1.jpg" },
+                                { label: "교감 시간", src: "/images/about2.jpg" },
+                                { label: "새 가족", src: "/images/about3.jpg" }
+                            ].map((item, i) => (
+                                <div key={i} className="relative aspect-[4/3] rounded-2xl overflow-hidden shadow-lg bg-gray-100">
+                                    <Image
+                                        src={item.src}
+                                        alt={item.label}
+                                        fill
+                                        className="object-cover"
+                                        sizes="(max-width: 768px) 33vw, 25vw"
+                                    />
                                 </div>
                             ))}
                         </motion.div>

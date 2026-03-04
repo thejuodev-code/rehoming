@@ -54,7 +54,8 @@ export default function AdoptPage() {
     // GraphQL 데이터 가져오기
     const { loading, error, data } = useQuery<GetAnimalsData>(GET_ANIMALS, {
         variables: { first: 50 },
-        fetchPolicy: 'cache-and-network'
+        fetchPolicy: 'cache-and-network',
+        context: { skipAuth: true }
     });
 
     // WordPress 데이터를 UI에 맞게 매핑
@@ -144,7 +145,7 @@ export default function AdoptPage() {
                             className="inline-flex items-center justify-center px-6 py-3 bg-white text-gray-800 font-bold text-sm rounded-full border border-gray-200 shadow-sm hover:border-gray-300 hover:shadow-md transition-all group"
                         >
                             <span className="mr-2">입양 절차 다시보기</span>
-                            <svg className="w-4 h-4 text-gray-400 group-hover:text-gray-600 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <svg className="w-4 h-4 text-gray-400 group-hover:text-gray-600 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                             </svg>
                         </Link>
@@ -158,6 +159,7 @@ export default function AdoptPage() {
                 <div className="flex flex-wrap gap-3">
                     {CATEGORIES.map(category => (
                         <button
+                            type="button"
                             key={category.id}
                             onClick={() => setActiveCategory(category.id)}
                             className={`relative px-7 py-3.5 rounded-full font-extrabold text-base md:text-lg transition-all duration-300 shadow-sm border ${activeCategory === category.id
@@ -175,6 +177,7 @@ export default function AdoptPage() {
                     <span className="text-gray-400 font-bold text-sm ml-3 mr-1 hidden sm:block">상태:</span>
                     {STATUS_FILTERS.map(status => (
                         <button
+                            type="button"
                             key={status.id}
                             onClick={() => setActiveStatus(status.id)}
                             className={`px-5 py-2.5 rounded-full font-bold text-sm transition-all duration-300 ${activeStatus === status.id
@@ -227,8 +230,8 @@ export default function AdoptPage() {
                     >
                         <AnimatePresence mode="popLayout">
                             {filteredAnimals.map((animal: any) => (
-                                <Link href={`/adopt/${animal.slug}`} key={animal.id} passHref legacyBehavior>
-                                    <motion.a
+                                <Link href={`/adopt/${animal.slug}`} key={animal.id} className="block">
+                                    <motion.div
                                         layout
                                         variants={fadeScaleUp}
                                         initial="hidden"
@@ -245,7 +248,7 @@ export default function AdoptPage() {
                                             >
                                                 <img
                                                     src={animal.image}
-                                                    alt={animal.name}
+                                                    alt={animal.name || '입양 동물 이미지'}
                                                     className="w-full h-full object-cover"
                                                 />
                                             </motion.div>
@@ -269,7 +272,7 @@ export default function AdoptPage() {
                                             <div className="absolute inset-0 bg-gradient-to-t from-gray-900/80 via-gray-900/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-8">
                                                 <span className="text-white font-bold tracking-wide flex items-center">
                                                     자세히 보기
-                                                    <svg className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <svg className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
                                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M17 8l4 4m0 0l-4 4m4-4H3" />
                                                     </svg>
                                                 </span>
@@ -298,15 +301,15 @@ export default function AdoptPage() {
 
                                             {animal.tags && animal.tags.length > 0 && (
                                                 <div className="mt-auto pt-5 border-t border-gray-100 flex flex-wrap gap-2.5">
-                                                    {animal.tags.map((tag: string, index: number) => (
-                                                        <span key={index} className="inline-flex items-center px-3 py-1.5 text-sm font-extrabold text-brand-primary bg-brand-primary/10 rounded-full border border-brand-primary/20 shadow-sm">
+                                                    {animal.tags.map((tag: string) => (
+                                                        <span key={`${animal.id}-${tag}`} className="inline-flex items-center px-3 py-1.5 text-sm font-extrabold text-brand-primary bg-brand-primary/10 rounded-full border border-brand-primary/20 shadow-sm">
                                                             #{tag}
                                                         </span>
                                                     ))}
                                                 </div>
                                             )}
                                         </div>
-                                    </motion.a>
+                                    </motion.div>
                                 </Link>
                             ))}
                         </AnimatePresence>
