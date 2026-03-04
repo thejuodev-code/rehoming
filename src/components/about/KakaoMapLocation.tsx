@@ -15,9 +15,19 @@ export default function KakaoMapLocation() {
 
     const kakaoAppKey = process.env.NEXT_PUBLIC_KAKAO_MAP_CLIENT_ID || '';
 
-    // 인천광역시 남동구 논현로46번길 22 B동 1층 105호
-    const lat = 37.4199;
-    const lng = 126.7322;
+    // 지점 정보
+    const branches = [
+        {
+            name: '리호밍센터 인천점',
+            lat: 37.4014,
+            lng: 126.7104,
+        },
+        {
+            name: '리호밍센터 광명점',
+            lat: 37.4484,
+            lng: 126.8840,
+        }
+    ];
 
     useEffect(() => {
         if (!mapRef.current) return;
@@ -27,24 +37,35 @@ export default function KakaoMapLocation() {
         const initMap = () => {
             try {
                 window.kakao.maps.load(() => {
-                    const position = new window.kakao.maps.LatLng(lat, lng);
-                    const options = {
-                        center: position,
+                    const map = new window.kakao.maps.Map(mapRef.current, {
+                        center: new window.kakao.maps.LatLng(37.4014, 126.7104),
                         level: 3,
-                    };
-                    const map = new window.kakao.maps.Map(mapRef.current, options);
-
-                    // 마커 추가
-                    const marker = new window.kakao.maps.Marker({
-                        position: position,
                     });
-                    marker.setMap(map);
 
-                    // 인포윈도우(말풍선) 추가
-                    const infowindow = new window.kakao.maps.InfoWindow({
-                        content: '<div style="padding:8px 12px;font-size:14px;font-weight:bold;color:#333;">리호밍센터</div>',
+                    const bounds = new window.kakao.maps.LatLngBounds();
+
+                    branches.forEach((branch) => {
+                        const position = new window.kakao.maps.LatLng(branch.lat, branch.lng);
+
+                        // 마커 추가
+                        const marker = new window.kakao.maps.Marker({
+                            position: position,
+                        });
+                        marker.setMap(map);
+
+                        // 인포윈도우(말풍선) 추가
+                        const infowindow = new window.kakao.maps.InfoWindow({
+                            content: `<div style="padding:8px 12px;font-size:14px;font-weight:bold;color:#333;white-space:nowrap;">${branch.name}</div>`,
+                        });
+                        infowindow.open(map, marker);
+
+                        bounds.extend(position);
                     });
-                    infowindow.open(map, marker);
+
+                    // 두 지점이 모두 보이도록 지도 범위 재설정
+                    if (branches.length > 1) {
+                        map.setBounds(bounds);
+                    }
 
                     setIsLoaded(true);
                 });

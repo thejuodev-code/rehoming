@@ -22,7 +22,6 @@ const STATUS_FILTERS = [
     { id: 'all', name: '모든 상태' },
     { id: 'urgent', name: '🚨 긴급 찾기' },
     { id: 'available', name: '✨ 입양 가능' },
-    { id: 'foster', name: '🏡 임보 중' },
     { id: 'adopted', name: '🎊 입양 완료' }
 ];
 
@@ -104,6 +103,9 @@ export default function AdoptPage() {
 
     // 1. 카테고리 & 상태 필터링
     const filteredAnimals = animals.filter((animal: any) => {
+        // 임보 중인 아이들 원천 차단
+        if (animal.statusSlug === 'foster' || animal.status.includes('임보')) return false;
+
         // 동물 종류 필터
         const categoryMatch = activeCategory === 'all'
             ? true
@@ -116,11 +118,9 @@ export default function AdoptPage() {
                 ? animal.urgent
                 : activeStatus === 'available'
                     ? animal.statusSlug === 'available' || animal.status.includes('입양 가능')
-                    : activeStatus === 'foster'
-                        ? animal.statusSlug === 'foster' || animal.status.includes('임보')
-                        : activeStatus === 'adopted'
-                            ? animal.statusSlug === 'adopted' || animal.status.includes('입양 완료')
-                            : true;
+                    : activeStatus === 'adopted'
+                        ? animal.statusSlug === 'adopted' || animal.status.includes('입양 완료')
+                        : true;
 
         return categoryMatch && statusMatch;
     });
@@ -139,9 +139,6 @@ export default function AdoptPage() {
                         </h1>
                     </div>
                     <div className="flex flex-col flex-shrink-0 items-start md:items-end">
-                        <p className="text-gray-500 font-medium mb-4">
-                            모든 천사들은 철저한 건강검진을 거쳤습니다.
-                        </p>
                         <Link
                             href="/process"
                             className="inline-flex items-center justify-center px-6 py-3 bg-white text-gray-800 font-bold text-sm rounded-full border border-gray-200 shadow-sm hover:border-gray-300 hover:shadow-md transition-all group"

@@ -292,27 +292,12 @@ export default function AdoptDetailPage() {
                         ))}
                     </motion.div>
 
-                    {/* 4. Rescue Details */}
+                    {/* 4. Rescue Details (Hidden per request) */}
+                    {/*
                     <motion.div variants={fadeInUp} className="flex flex-col sm:flex-row gap-4 mb-10">
-                        <div className="flex-1 flex items-center gap-4 px-6 py-5 bg-gray-50/70 rounded-2xl">
-                            <div className="w-10 h-10 rounded-xl bg-white flex items-center justify-center text-gray-400 flex-shrink-0 shadow-sm">
-                                <IconCalendar className="w-[18px] h-[18px]" />
-                            </div>
-                            <div className="flex flex-col">
-                                <span className="text-[11px] font-bold text-gray-400 tracking-widest uppercase mb-0.5">구조 날짜</span>
-                                <span className="text-base font-bold text-gray-900">{rescueDate}</span>
-                            </div>
-                        </div>
-                        <div className="flex-1 flex items-center gap-4 px-6 py-5 bg-gray-50/70 rounded-2xl">
-                            <div className="w-10 h-10 rounded-xl bg-white flex items-center justify-center text-gray-400 flex-shrink-0 shadow-sm">
-                                <IconMapPin className="w-[18px] h-[18px]" />
-                            </div>
-                            <div className="flex flex-col">
-                                <span className="text-[11px] font-bold text-gray-400 tracking-widest uppercase mb-0.5">구조 장소</span>
-                                <span className="text-base font-bold text-gray-900">{rescueLocation}</span>
-                            </div>
-                        </div>
+                    ...
                     </motion.div>
+                    */}
 
                     {/* 5. Personality & Medical — Two column cards */}
                     <motion.div variants={fadeInUp} className="grid grid-cols-1 md:grid-cols-2 gap-5 mb-14">

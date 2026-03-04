@@ -64,16 +64,19 @@ export default function Footer() {
                 {/* Bottom Section: Legal & Copyright */}
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-8">
                     <div className="text-gray-500">
-                        <p className="mb-4 text-white font-medium text-xs tracking-wider">사랑해주오 입양센터 인천점</p>
-                        <div className="space-y-2 text-xs font-light leading-relaxed">
-                            <p className="flex flex-col sm:flex-row sm:space-x-4">
+                        <p className="mb-4 text-white font-medium text-xs tracking-wider">사랑해주오 입양센터</p>
+                        <div className="space-y-3 text-xs font-light leading-relaxed">
+                            <p className="flex flex-col sm:flex-row sm:space-x-4 mb-2">
                                 <span>대표자: 박성휘</span>
                                 <span className="hidden sm:inline text-gray-700">|</span>
                                 <span>사업자등록번호: 759-85-02543</span>
                                 <span className="hidden sm:inline text-gray-700">|</span>
                                 <span>대표번호: 010-7700-6655</span>
                             </p>
-                            <p>주소: 인천광역시 남동구 논현로46번길 22, B동 1층 105호</p>
+                            <div className="flex flex-col space-y-1">
+                                <p><strong className="text-gray-400 font-medium mr-2">[인천점]</strong> 인천광역시 남동구 논현로46번길 22, B동 1층 105호</p>
+                                <p><strong className="text-gray-400 font-medium mr-2">[광명점]</strong> 경기도 광명시 금하로 464, 2층 207호</p>
+                            </div>
                         </div>
                     </div>
 

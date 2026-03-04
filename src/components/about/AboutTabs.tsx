@@ -183,48 +183,58 @@ export default function AboutTabs() {
                                 </div>
 
                                 {/* 주소 카드 */}
-                                <div className="bg-white border border-gray-100 rounded-2xl p-6 shadow-sm space-y-4">
+                                <div className="bg-white border border-gray-100 rounded-[28px] p-7 shadow-[0_2px_20px_rgb(0,0,0,0.02)] space-y-6">
                                     <div className="flex items-start gap-4">
-                                        <div className="w-10 h-10 bg-brand-trust/10 rounded-xl flex items-center justify-center flex-shrink-0 mt-0.5">
-                                            <svg className="w-5 h-5 text-brand-trust" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <div className="w-12 h-12 bg-indigo-50/80 text-blue-600 rounded-2xl flex items-center justify-center flex-shrink-0">
+                                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                                             </svg>
                                         </div>
-                                        <div>
-                                            <p className="text-xs text-gray-400 font-semibold uppercase tracking-wider mb-1">주소</p>
-                                            <p className="text-base font-semibold text-gray-800">인천광역시 남동구 논현로46번길 22</p>
-                                            <p className="text-sm text-gray-500">B동 1층 105호</p>
+                                        <div className="w-full">
+                                            <p className="text-[13px] font-bold text-gray-400 mb-1.5">주소</p>
+                                            <div className="space-y-4">
+                                                <div>
+                                                    <span className="inline-block px-2 py-0.5 bg-blue-50 text-blue-600 rounded text-[11px] font-bold mb-1">인천점</span>
+                                                    <p className="text-[16px] font-bold text-gray-800 tracking-tight leading-tight mb-0.5">인천광역시 남동구 논현로46번길 22</p>
+                                                    <p className="text-[14px] text-gray-500">B동 1층 105호</p>
+                                                </div>
+                                                <div>
+                                                    <span className="inline-block px-2 py-0.5 bg-blue-50 text-blue-600 rounded text-[11px] font-bold mb-1">광명점</span>
+                                                    <p className="text-[16px] font-bold text-gray-800 tracking-tight leading-tight mb-0.5">경기도 광명시 금하로 464</p>
+                                                    <p className="text-[14px] text-gray-500">2층 207호</p>
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
 
-                                    <hr className="border-gray-100" />
+                                    <hr className="border-gray-50" />
 
                                     <div className="flex items-start gap-4">
-                                        <div className="w-10 h-10 bg-amber-50 rounded-xl flex items-center justify-center flex-shrink-0 mt-0.5">
-                                            <svg className="w-5 h-5 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <div className="w-12 h-12 bg-orange-50 text-orange-500 rounded-2xl flex items-center justify-center flex-shrink-0">
+                                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                                             </svg>
                                         </div>
                                         <div>
-                                            <p className="text-xs text-gray-400 font-semibold uppercase tracking-wider mb-1">운영 시간</p>
-                                            <p className="text-base font-semibold text-gray-800">월 – 금: 10:00 – 18:00</p>
-                                            <p className="text-sm text-gray-500">주말 방문은 사전 예약 필요</p>
+                                            <p className="text-[13px] font-bold text-gray-400 mb-1.5">운영 시간</p>
+                                            <p className="text-[16px] font-bold text-gray-800 tracking-tight leading-tight mb-0.5">연중무휴 10:00 - 22:00</p>
+                                            <p className="text-[14px] text-gray-500">방문은 사전 예약을 권장합니다</p>
                                         </div>
                                     </div>
 
-                                    <hr className="border-gray-100" />
+                                    <hr className="border-gray-50" />
 
                                     <div className="flex items-start gap-4">
-                                        <div className="w-10 h-10 bg-green-50 rounded-xl flex items-center justify-center flex-shrink-0 mt-0.5">
-                                            <svg className="w-5 h-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <div className="w-12 h-12 bg-green-50 text-green-500 rounded-2xl flex items-center justify-center flex-shrink-0">
+                                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
                                             </svg>
                                         </div>
                                         <div>
-                                            <p className="text-xs text-gray-400 font-semibold uppercase tracking-wider mb-1">문의 전화</p>
-                                            <p className="text-base font-semibold text-gray-800">오른쪽 채팅 버튼으로 문의하세요</p>
-                                            <p className="text-sm text-gray-500">채널톡 채팅 상담 운영 중</p>
+                                            <p className="text-[13px] font-bold text-gray-400 mb-1.5">문의</p>
+                                            <p className="text-[16px] font-bold text-gray-800 tracking-tight leading-tight mb-0.5">010-7700-6655</p>
+                                            <p className="text-[14px] text-gray-500">또는 오른쪽 채팅 버튼으로 문의하세요</p>
                                         </div>
                                     </div>
                                 </div>
