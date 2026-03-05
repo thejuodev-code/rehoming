@@ -102,12 +102,12 @@ export interface AnimalFields {
     weight?: string;
     personality?: string;
     medicalHistory?: string;
+    neutered?: boolean;
     image?: {
         node: {
             sourceUrl: string;
         };
     };
-}
 }
 
 export interface GetAnimalBySlugData {
