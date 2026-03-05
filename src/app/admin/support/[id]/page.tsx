@@ -13,13 +13,19 @@ import { UPDATE_SUPPORT_POST, UpdateSupportPostData, UpdateSupportPostVariables 
 export default function EditSupportPostPage() {
   const router = useRouter();
   const params = useParams();
-  const slug = String(params.id || '');
+  const slug = decodeURIComponent(String(params.id || ''));
   const { data, loading } = useQuery<GetSupportPostBySlugResponse>(GET_SUPPORT_POST_BY_SLUG, {
     variables: { id: slug },
     skip: !slug,
+    fetchPolicy: 'network-only',
+    nextFetchPolicy: 'cache-first',
   });
   const [updateSupportPost] = useMutation<UpdateSupportPostData, UpdateSupportPostVariables>(UPDATE_SUPPORT_POST, {
     refetchQueries: ['GetSupportPosts'],
+    onError: (error) => {
+      toast.error(`수정 실패: ${error.message}`);
+      setIsSubmitting(false);
+    },
   });
   const [post, setPost] = useState<SupportPostListItem | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -51,32 +57,43 @@ export default function EditSupportPostPage() {
     }
   }, [loading, data, router]);
 
-  const handleSubmit = async (data: SupportPostInput) => {
+  const handleSubmit = async (formData: SupportPostInput) => {
     if (!post) return;
 
     setIsSubmitting(true);
     try {
+      // 1단계: GraphQL mutation (표준 WP 필드 + 택소노미)
       await updateSupportPost({
         variables: {
           id: post.id.toString(),
-        title: data.title,
-        content: data.content,
+          title: formData.title,
+          content: formData.content,
           status: 'PUBLISH',
-          supportMeta: {
-            isNotice: data.supportMeta.isNotice,
-            viewCount: post.viewCount,
-            attachedFile: data.supportMeta.attachedFile,
+          supportCategories: {
+            nodes: formData.supportCategorySlugs.map((slug) => ({ slug })),
           },
-          supportCategories: data.supportCategorySlugs,
         },
       });
+
+      // 2단계: ACF 필드 저장 (AJAX)
+      const wpUrl = process.env.NEXT_PUBLIC_WORDPRESS_API_URL?.replace('/graphql', '');
+      const token = (await import('@/lib/auth')).getAuthToken() || '';
+
+      const fieldsForm = new FormData();
+      fieldsForm.append('action', 'rehoming_save_support_fields');
+      fieldsForm.append('token', token);
+      fieldsForm.append('post_id', String(post.id));
+      fieldsForm.append('isNotice', formData.supportMeta.isNotice ? 'true' : 'false');
+      fieldsForm.append('viewCount', String(post.viewCount));
+      if (formData.supportMeta.attachedFile) {
+        fieldsForm.append('attachedFile', formData.supportMeta.attachedFile);
+      }
+      await fetch(`${wpUrl}/wp-admin/admin-ajax.php`, { method: 'POST', body: fieldsForm });
 
       toast.success('게시글이 수정되었습니다.');
       router.push('/admin/support');
     } catch (error) {
       console.error('Failed to update post:', error);
-      toast.error('게시글 수정에 실패했습니다.');
-    } finally {
       setIsSubmitting(false);
     }
   };
@@ -90,10 +107,10 @@ export default function EditSupportPostPage() {
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold text-slate-900">게시글 수정</h1>
       </div>
-      <SupportPostForm 
-        initialData={post} 
-        onSubmit={handleSubmit} 
-        isSubmitting={isSubmitting} 
+      <SupportPostForm
+        initialData={post}
+        onSubmit={handleSubmit}
+        isSubmitting={isSubmitting}
       />
     </div>
   );

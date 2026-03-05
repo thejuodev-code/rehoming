@@ -19,14 +19,18 @@ export default function NewReviewPage() {
   const router = useRouter();
   const [createReview] = useMutation<CreateReviewData, CreateReviewVariables>(CREATE_REVIEW, {
     refetchQueries: ['GetReviews'],
+    onError: (error) => {
+      toast.error(`등록 실패: ${error.message}`);
+      setIsSubmitting(false);
+    }
   });
 
-  // 폼 상태
   const [formData, setFormData] = useState({
     title: '',
     excerpt: '',
     content: '',
-    featuredImage: '',
+    featuredImageUrl: '',
+    featuredImageId: undefined as number | undefined,
     authorName: '',
     animalName: '',
     animalType: '강아지' as '강아지' | '고양이' | '기타',
@@ -37,27 +41,14 @@ export default function NewReviewPage() {
 
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // 입력 핸들러
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  // 이미지 업로드 핸들러
-  const handleImageChange = (url: string) => {
-    setFormData((prev) => ({ ...prev, featuredImage: url }));
-  };
-
-  // 본문 에디터 핸들러
-  const handleContentChange = (html: string) => {
-    setFormData((prev) => ({ ...prev, content: html }));
-  };
-
-  // 폼 제출
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // 필수 필드 검증
     if (!formData.title.trim()) {
       toast.error('제목을 입력해주세요.');
       return;
@@ -74,39 +65,57 @@ export default function NewReviewPage() {
     setIsSubmitting(true);
 
     try {
-      await createReview({
+      // 1단계: GraphQL mutation (표준 WP 필드만)
+      const result = await createReview({
         variables: {
           title: formData.title,
           content: formData.content,
           excerpt: formData.excerpt,
           status: 'PUBLISH',
-          featuredImageId: undefined,
-          reviewFields: {
-            authorName: formData.authorName,
-            animalName: formData.animalName,
-            animalType: formData.animalType,
-            adoptionDate: formData.adoptionDate,
-            quote: formData.quote,
-            isPinned: formData.isPinned,
-          },
         },
       });
+
+      const newPostId = result.data?.createReview?.review?.databaseId;
+      if (newPostId) {
+        const wpUrl = process.env.NEXT_PUBLIC_WORDPRESS_API_URL?.replace('/graphql', '');
+        const token = (await import('@/lib/auth')).getAuthToken() || '';
+
+        // 2단계: ACF 필드 저장 (AJAX)
+        const fieldsForm = new FormData();
+        fieldsForm.append('action', 'rehoming_save_review_fields');
+        fieldsForm.append('token', token);
+        fieldsForm.append('post_id', String(newPostId));
+        fieldsForm.append('authorName', formData.authorName);
+        fieldsForm.append('animalName', formData.animalName);
+        fieldsForm.append('animalType', formData.animalType);
+        fieldsForm.append('adoptionDate', formData.adoptionDate);
+        fieldsForm.append('quote', formData.quote);
+        fieldsForm.append('isPinned', formData.isPinned ? 'true' : 'false');
+        await fetch(`${wpUrl}/wp-admin/admin-ajax.php`, { method: 'POST', body: fieldsForm });
+
+        // 3단계: 썸네일 연결 (AJAX)
+        if (formData.featuredImageId) {
+          const thumbForm = new FormData();
+          thumbForm.append('action', 'rehoming_set_thumbnail');
+          thumbForm.append('token', token);
+          thumbForm.append('post_id', String(newPostId));
+          thumbForm.append('attachment_id', String(formData.featuredImageId));
+          await fetch(`${wpUrl}/wp-admin/admin-ajax.php`, { method: 'POST', body: thumbForm });
+        }
+      }
 
       toast.success('입양 후기가 등록되었습니다.');
       router.push('/admin/reviews');
     } catch (error) {
-      toast.error('등록 중 오류가 발생했습니다.');
-    } finally {
+      console.error('Create review error:', error);
       setIsSubmitting(false);
     }
   };
 
-  // 취소
   const handleCancel = () => {
     router.push('/admin/reviews');
   };
 
-  // 동물 타입 옵션
   const animalTypeOptions = [
     { value: '강아지', label: '강아지' },
     { value: '고양이', label: '고양이' },
@@ -127,8 +136,11 @@ export default function NewReviewPage() {
           </CardHeader>
           <CardContent>
             <ImageUpload
-              value={formData.featuredImage}
-              onChange={handleImageChange}
+              value={formData.featuredImageUrl}
+              onChange={(url) => setFormData((prev) => ({ ...prev, featuredImageUrl: url }))}
+              onUploadComplete={(id, url) => {
+                setFormData((prev) => ({ ...prev, featuredImageId: id, featuredImageUrl: url }));
+              }}
               previewWidth={400}
               previewHeight={250}
             />
@@ -257,7 +269,7 @@ export default function NewReviewPage() {
           <CardContent>
             <RichEditor
               value={formData.content}
-              onChange={handleContentChange}
+              onChange={(html) => setFormData((prev) => ({ ...prev, content: html }))}
               placeholder="입양 후기 내용을 입력하세요..."
               minHeight="300px"
             />

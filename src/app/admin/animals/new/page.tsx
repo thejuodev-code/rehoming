@@ -31,8 +31,6 @@ const initialFormState: AnimalInput = {
     breed: '',
     gender: '미상',
     weight: '',
-    rescueDate: '',
-    rescueLocation: '',
     personality: '',
     medicalHistory: '',
     hashtags: '',
@@ -48,6 +46,7 @@ interface FormErrors {
   excerpt?: string;
   content?: string;
   animalTypeSlugs?: string;
+  featuredImageId?: string;
 }
 
 const toTermInputId = (term: { id?: string; databaseId: number }): string => {
@@ -60,13 +59,9 @@ const toTermInputId = (term: { id?: string; databaseId: number }): string => {
 export default function NewAnimalPage() {
   const router = useRouter();
   const { data: taxonomyData } = useQuery<GetAnimalTaxonomiesData>(GET_ANIMAL_TAXONOMIES);
-  
+
   const [createAnimal, { loading: isCreating }] = useMutation<CreateAnimalData, CreateAnimalVariables>(CREATE_ANIMAL, {
     refetchQueries: ['GetAdminAnimals'],
-    onCompleted: () => {
-      toast.success('동물 정보가 등록되었습니다.');
-      router.push('/admin/animals');
-    },
     onError: (error) => {
       toast.error(`등록 실패: ${error.message}`);
       setIsSubmitting(false);
@@ -84,7 +79,7 @@ export default function NewAnimalPage() {
   );
 
   // 필드 변경 핸들러
-  const handleChange = (field: keyof AnimalInput, value: string | string[]) => {
+  const handleChange = (field: keyof AnimalInput, value: string | string[] | number | undefined) => {
     setFormData(prev => ({ ...prev, [field]: value }));
     // 에러 클리어
     if (errors[field as keyof FormErrors]) {
@@ -117,7 +112,7 @@ export default function NewAnimalPage() {
   // 폼 검증
   const validateForm = (): boolean => {
     const newErrors: FormErrors = {};
-    
+
     if (!formData.title.trim()) {
       newErrors.title = '이름을 입력해주세요.';
     }
@@ -130,7 +125,7 @@ export default function NewAnimalPage() {
     if (formData.animalTypeSlugs.length === 0) {
       newErrors.animalTypeSlugs = '동물 타입을 선택해주세요.';
     }
-    
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -141,9 +136,9 @@ export default function NewAnimalPage() {
       toast.error('필수 항목을 모두 입력해주세요.');
       return;
     }
-    
+
     setIsSubmitting(true);
-    
+
     try {
       const animalTypeIds = formData.animalTypeSlugs
         .map((slug) => typeIdBySlug.get(slug))
@@ -156,7 +151,7 @@ export default function NewAnimalPage() {
         return;
       }
 
-      await createAnimal({
+      const result = await createAnimal({
         variables: {
           title: formData.title,
           content: formData.content,
@@ -168,15 +163,41 @@ export default function NewAnimalPage() {
           animalStatuses: {
             nodes: [{ id: animalStatusId }],
           },
-          age: formData.animalFields.age,
-          breed: formData.animalFields.breed,
-          gender: formData.animalFields.gender,
-          weight: formData.animalFields.weight,
-          personality: formData.animalFields.personality,
-          medicalHistory: formData.animalFields.medicalHistory,
-          hashtags: formData.animalFields.hashtags,
         }
       });
+
+      const newPostId = result.data?.createAnimal?.animal?.databaseId;
+      if (newPostId) {
+        const wpUrl = process.env.NEXT_PUBLIC_WORDPRESS_API_URL?.replace('/graphql', '');
+        const token = (await import('@/lib/auth')).getAuthToken() || '';
+
+        // 2단계: ACF 필드 저장 (AJAX)
+        const fieldsForm = new FormData();
+        fieldsForm.append('action', 'rehoming_save_animal_fields');
+        fieldsForm.append('token', token);
+        fieldsForm.append('post_id', String(newPostId));
+        fieldsForm.append('age', formData.animalFields.age);
+        fieldsForm.append('breed', formData.animalFields.breed);
+        fieldsForm.append('gender', formData.animalFields.gender);
+        fieldsForm.append('weight', formData.animalFields.weight);
+        fieldsForm.append('personality', formData.animalFields.personality);
+        fieldsForm.append('medicalHistory', formData.animalFields.medicalHistory);
+        fieldsForm.append('hashtags', formData.animalFields.hashtags);
+        await fetch(`${wpUrl}/wp-admin/admin-ajax.php`, { method: 'POST', body: fieldsForm });
+
+        // 3단계: 썸네일 연결 (AJAX)
+        if (formData.featuredImageId) {
+          const thumbForm = new FormData();
+          thumbForm.append('action', 'rehoming_set_thumbnail');
+          thumbForm.append('token', token);
+          thumbForm.append('post_id', String(newPostId));
+          thumbForm.append('attachment_id', String(formData.featuredImageId));
+          await fetch(`${wpUrl}/wp-admin/admin-ajax.php`, { method: 'POST', body: thumbForm });
+        }
+      }
+
+      toast.success('동물 정보가 등록되었습니다.');
+      router.push('/admin/animals');
     } catch (error) {
       console.error('Create animal error:', error);
       setIsSubmitting(false);
@@ -212,26 +233,18 @@ export default function NewAnimalPage() {
             </CardHeader>
             <CardContent>
               <ImageUpload
-                value={formData.featuredImage}
-                onChange={(url) => handleChange('featuredImage', url)}
-                previewHeight={200}
+                value={formData.featuredImageUrl}
+                onChange={(url) => handleChange('featuredImageUrl', url)}
+                onUploadComplete={(id, url) => {
+                  handleChange('featuredImageId', id);
+                  handleChange('featuredImageUrl', url);
+                }}
+                error={errors.featuredImageId}
               />
             </CardContent>
           </Card>
 
-          {/* 상세 이미지 */}
-          <Card>
-            <CardHeader>
-              <CardTitle>상세 이미지</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <ImageUpload
-                value={formData.animalFields.image}
-                onChange={(url) => handleAnimalFieldChange('image', url)}
-                previewHeight={200}
-              />
-            </CardContent>
-          </Card>
+
         </div>
 
         {/* 오른쪽: 폼 섹션 */}

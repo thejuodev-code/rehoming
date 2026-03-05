@@ -13,21 +13,14 @@ import { Input } from '@/components/ui/input';
 import { Table, TableHeader, TableBody, TableRow, TableCell, TableHead } from '@/components/ui/table';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { MoreHorizontal, Pencil, Trash2, Search } from 'lucide-react';
+import { MoreHorizontal, Pencil, Trash2, Search, Loader2 } from 'lucide-react';
 import Link from 'next/link';
 const supportCategoryOptions = [
   { value: 'all', label: '전체 카테고리' },
-  { value: '후원금 내역', label: '후원금 내역' },
-  { value: '봉사 활동', label: '봉사 활동' },
-  { value: '후원자 소식', label: '후원자 소식' },
-  { value: '공지사항', label: '공지사항' },
-  { value: '모집', label: '모집' },
-  { value: '행사', label: '행사' },
-  { value: '정보', label: '정보' },
-  { value: '운영', label: '운영' },
-  { value: '재정', label: '재정' },
-  { value: '사업 계획', label: '사업 계획' },
-  { value: '교육', label: '교육' },
+  { value: '공지', label: '공지' },
+  { value: '봉사', label: '봉사' },
+  { value: '소식', label: '소식' },
+  { value: '후원', label: '후원' },
 ];
 
 const noticeOptions = [
@@ -40,6 +33,8 @@ export default function SupportPostListPage() {
   const router = useRouter();
   const { data, loading, error } = useQuery<GetSupportPostsResponse>(GET_SUPPORT_POSTS, {
     variables: { first: 100 },
+    fetchPolicy: 'network-only',
+    nextFetchPolicy: 'cache-first',
   });
   const [deleteSupportPost] = useMutation<DeleteSupportPostData, DeleteSupportPostVariables>(DELETE_SUPPORT_POST, {
     refetchQueries: ['GetSupportPosts'],
@@ -87,7 +82,7 @@ export default function SupportPostListPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
-        <p className="text-slate-500">로딩 중...</p>
+        <Loader2 className="h-8 w-8 animate-spin text-slate-400" />
       </div>
     );
   }
@@ -103,14 +98,14 @@ export default function SupportPostListPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold text-slate-900">후원/봉사 게시판 관리</h1>
-        <Button onClick={() => router.push('/admin/support/new')}>
-          새 게시글 등록
-        </Button>
+        <Link href="/admin/support/new">
+          <Button>새 게시글 등록</Button>
+        </Link>
       </div>
 
-      <div className="flex flex-col sm:flex-row gap-4 bg-white p-4 rounded-lg border border-slate-200 shadow-sm">
+      <div className="flex flex-col space-y-4 sm:flex-row sm:space-x-4 sm:space-y-0">
         <div className="relative w-full sm:w-64">
           <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-slate-500" />
           <Input
@@ -134,7 +129,7 @@ export default function SupportPostListPage() {
             </SelectContent>
           </Select>
         </div>
-        <div className="w-full sm:w-32">
+        <div className="w-full sm:w-36">
           <Select value={noticeFilter} onValueChange={setNoticeFilter}>
             <SelectTrigger>
               <SelectValue placeholder="공지 여부" />
@@ -172,11 +167,11 @@ export default function SupportPostListPage() {
               </TableRow>
             ) : (
               filteredData.map((post) => (
-                <TableRow key={post.id}>
+                <TableRow key={post.id} className="cursor-pointer hover:bg-slate-50" onClick={() => router.push(`/admin/support/${post.slug}`)}>
                   <TableCell className="text-slate-500">#{post.id}</TableCell>
                   <TableCell>
                     <div className="flex flex-col">
-                      <span className="font-medium text-slate-900">{post.title}</span>
+                      <Link href={`/admin/support/${post.slug}`} className="font-medium text-slate-900 hover:text-blue-600 hover:underline">{post.title}</Link>
                       {post.isNotice && (
                         <span className="text-xs text-red-500 font-medium mt-0.5">공지사항</span>
                       )}
@@ -185,10 +180,10 @@ export default function SupportPostListPage() {
                   <TableCell>
                     <Badge variant="secondary">{post.category}</Badge>
                   </TableCell>
-                  <TableCell>{post.viewCount.toLocaleString()}</TableCell>
-                  <TableCell>{post.authorName}</TableCell>
+                  <TableCell className="text-slate-600">{post.viewCount.toLocaleString()}</TableCell>
+                  <TableCell className="text-slate-600">{post.authorName}</TableCell>
                   <TableCell className="text-slate-500">{post.createdAt}</TableCell>
-                  <TableCell className="text-right">
+                  <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
                         <Button variant="ghost" className="h-8 w-8 p-0">
@@ -226,8 +221,7 @@ export default function SupportPostListPage() {
             <DialogTitle>게시글 삭제</DialogTitle>
           </DialogHeader>
           <div className="py-4">
-            <p>정말로 이 게시글을 삭제하시겠습니까?</p>
-            <p className="text-sm text-slate-500 mt-2">삭제된 데이터는 복구할 수 없습니다.</p>
+            <p>정말로 이 게시글을 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.</p>
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setDeleteId(null)}>

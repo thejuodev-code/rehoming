@@ -17,10 +17,10 @@ interface SupportPostFormProps {
 }
 
 const supportCategoryOptions = [
-  { value: 'donation', label: '후원금 내역' },
-  { value: 'volunteer', label: '봉사 활동' },
-  { value: 'sponsor', label: '후원자 소식' },
-  { value: 'notice', label: '공지사항' },
+  { value: 'notice', label: '공지' },
+  { value: 'volunteer', label: '봉사' },
+  { value: 'news', label: '소식' },
+  { value: 'support', label: '후원' },
 ];
 
 export default function SupportPostForm({ initialData, onSubmit, isSubmitting = false }: SupportPostFormProps) {

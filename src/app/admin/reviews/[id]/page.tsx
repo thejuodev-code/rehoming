@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, use } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useQuery, useMutation } from '@apollo/client/react';
@@ -17,28 +17,34 @@ import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { ImageUpload } from '@/components/admin/ui/ImageUpload';
 import { RichEditor } from '@/components/admin/ui/RichEditor';
+
 interface PageProps {
-  params: Promise<{ id: string }>;
+  params: { id: string };
 }
 
 export default function EditReviewPage({ params }: PageProps) {
-  const resolvedParams = use(params);
   const router = useRouter();
-  const reviewSlug = resolvedParams.id;
+  const reviewSlug = decodeURIComponent(params.id);
   const { data, loading: isQueryLoading } = useQuery<GetReviewsData>(GET_REVIEWS, {
     variables: { first: 100 },
+    fetchPolicy: 'network-only',
+    nextFetchPolicy: 'cache-first',
   });
   const [updateReview] = useMutation<UpdateReviewData, UpdateReviewVariables>(UPDATE_REVIEW, {
     refetchQueries: ['GetReviews'],
+    onError: (error) => {
+      toast.error(`수정 실패: ${error.message}`);
+      setIsSubmitting(false);
+    }
   });
   const existingReview = data?.reviews?.nodes?.find((review) => review.slug === reviewSlug);
 
-  // 폼 상태
   const [formData, setFormData] = useState({
     title: '',
     excerpt: '',
     content: '',
-    featuredImage: '',
+    featuredImageUrl: '',
+    featuredImageId: undefined as number | undefined,
     authorName: '',
     animalName: '',
     animalType: '강아지' as '강아지' | '고양이' | '기타',
@@ -50,14 +56,14 @@ export default function EditReviewPage({ params }: PageProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
-  // 기존 데이터 로드
   useEffect(() => {
     if (existingReview) {
       setFormData({
         title: existingReview.title,
         excerpt: existingReview.excerpt || '',
         content: existingReview.content || '',
-        featuredImage: existingReview.featuredImage?.node?.sourceUrl || '',
+        featuredImageUrl: existingReview.featuredImage?.node?.sourceUrl || '',
+        featuredImageId: undefined,
         authorName: existingReview.reviewFields?.authorName || '',
         animalName: existingReview.reviewFields?.animalName || '',
         animalType: (existingReview.reviewFields?.animalType || '강아지') as '강아지' | '고양이' | '기타',
@@ -65,52 +71,20 @@ export default function EditReviewPage({ params }: PageProps) {
         quote: existingReview.reviewFields?.quote || '',
         isPinned: Boolean(existingReview.reviewFields?.isPinned),
       });
+      setIsLoading(false);
+    } else if (!isQueryLoading) {
+      setIsLoading(false);
     }
-    setIsLoading(false);
-  }, [existingReview]);
+  }, [existingReview, isQueryLoading]);
 
-  // 리뷰가 없으면
-  if (!isLoading && !existingReview) {
-    return (
-      <div className="space-y-6">
-        <div className="flex items-center justify-between">
-          <h1 className="text-2xl font-bold text-slate-900">입양 후기 편집</h1>
-        </div>
-        <Card>
-          <CardContent className="py-12 text-center">
-            <p className="text-slate-500">존재하지 않는 후기입니다.</p>
-            <Link href="/admin/reviews">
-              <Button variant="outline" className="mt-4">
-                목록으로 돌아가기
-              </Button>
-            </Link>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
-
-  // 입력 핸들러
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  // 이미지 업로드 핸들러
-  const handleImageChange = (url: string) => {
-    setFormData((prev) => ({ ...prev, featuredImage: url }));
-  };
-
-  // 본문 에디터 핸들러
-  const handleContentChange = (html: string) => {
-    setFormData((prev) => ({ ...prev, content: html }));
-  };
-
-  // 폼 제출
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // 필수 필드 검증
     if (!formData.title.trim()) {
       toast.error('제목을 입력해주세요.');
       return;
@@ -124,13 +98,12 @@ export default function EditReviewPage({ params }: PageProps) {
       return;
     }
 
+    if (!existingReview) return;
+
     setIsSubmitting(true);
 
     try {
-      if (!existingReview) {
-        return;
-      }
-
+      // 1단계: GraphQL mutation (표준 WP 필드만)
       await updateReview({
         variables: {
           id: existingReview.databaseId.toString(),
@@ -138,33 +111,47 @@ export default function EditReviewPage({ params }: PageProps) {
           content: formData.content,
           excerpt: formData.excerpt,
           status: 'PUBLISH',
-          featuredImageId: undefined,
-          reviewFields: {
-            authorName: formData.authorName,
-            animalName: formData.animalName,
-            animalType: formData.animalType,
-            adoptionDate: formData.adoptionDate,
-            quote: formData.quote,
-            isPinned: formData.isPinned,
-          },
         },
       });
+
+      const wpUrl = process.env.NEXT_PUBLIC_WORDPRESS_API_URL?.replace('/graphql', '');
+      const token = (await import('@/lib/auth')).getAuthToken() || '';
+
+      // 2단계: ACF 필드 저장 (AJAX)
+      const fieldsForm = new FormData();
+      fieldsForm.append('action', 'rehoming_save_review_fields');
+      fieldsForm.append('token', token);
+      fieldsForm.append('post_id', String(existingReview.databaseId));
+      fieldsForm.append('authorName', formData.authorName);
+      fieldsForm.append('animalName', formData.animalName);
+      fieldsForm.append('animalType', formData.animalType);
+      fieldsForm.append('adoptionDate', formData.adoptionDate);
+      fieldsForm.append('quote', formData.quote);
+      fieldsForm.append('isPinned', formData.isPinned ? 'true' : 'false');
+      await fetch(`${wpUrl}/wp-admin/admin-ajax.php`, { method: 'POST', body: fieldsForm });
+
+      // 3단계: 썸네일 연결 (AJAX) - 새로 업로드한 경우만
+      if (formData.featuredImageId) {
+        const thumbForm = new FormData();
+        thumbForm.append('action', 'rehoming_set_thumbnail');
+        thumbForm.append('token', token);
+        thumbForm.append('post_id', String(existingReview.databaseId));
+        thumbForm.append('attachment_id', String(formData.featuredImageId));
+        await fetch(`${wpUrl}/wp-admin/admin-ajax.php`, { method: 'POST', body: thumbForm });
+      }
 
       toast.success('입양 후기가 수정되었습니다.');
       router.push('/admin/reviews');
     } catch (error) {
-      toast.error('수정 중 오류가 발생했습니다.');
-    } finally {
+      console.error('Update review error:', error);
       setIsSubmitting(false);
     }
   };
 
-  // 취소
   const handleCancel = () => {
     router.push('/admin/reviews');
   };
 
-  // 동물 타입 옵션
   const animalTypeOptions = [
     { value: '강아지', label: '강아지' },
     { value: '고양이', label: '고양이' },
@@ -186,6 +173,26 @@ export default function EditReviewPage({ params }: PageProps) {
     );
   }
 
+  if (!existingReview) {
+    return (
+      <div className="space-y-6">
+        <div className="flex items-center justify-between">
+          <h1 className="text-2xl font-bold text-slate-900">입양 후기 편집</h1>
+        </div>
+        <Card>
+          <CardContent className="py-12 text-center">
+            <p className="text-slate-500">존재하지 않는 후기입니다.</p>
+            <Link href="/admin/reviews">
+              <Button variant="outline" className="mt-4">
+                목록으로 돌아가기
+              </Button>
+            </Link>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -200,8 +207,11 @@ export default function EditReviewPage({ params }: PageProps) {
           </CardHeader>
           <CardContent>
             <ImageUpload
-              value={formData.featuredImage}
-              onChange={handleImageChange}
+              value={formData.featuredImageUrl}
+              onChange={(url) => setFormData((prev) => ({ ...prev, featuredImageUrl: url }))}
+              onUploadComplete={(id, url) => {
+                setFormData((prev) => ({ ...prev, featuredImageId: id, featuredImageUrl: url }));
+              }}
               previewWidth={400}
               previewHeight={250}
             />
@@ -330,7 +340,7 @@ export default function EditReviewPage({ params }: PageProps) {
           <CardContent>
             <RichEditor
               value={formData.content}
-              onChange={handleContentChange}
+              onChange={(html) => setFormData((prev) => ({ ...prev, content: html }))}
               placeholder="입양 후기 내용을 입력하세요..."
               minHeight="300px"
             />

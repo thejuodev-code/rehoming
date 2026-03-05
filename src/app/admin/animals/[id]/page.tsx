@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, use } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useQuery, useMutation } from '@apollo/client/react';
 import { GET_ANIMAL_BY_SLUG, GET_ANIMAL_TAXONOMIES } from '@/lib/queries';
@@ -31,8 +31,6 @@ const initialFormState: AnimalInput = {
     breed: '',
     gender: '미상',
     weight: '',
-    rescueDate: '',
-    rescueLocation: '',
     personality: '',
     medicalHistory: '',
     hashtags: '',
@@ -47,6 +45,7 @@ interface FormErrors {
   excerpt?: string;
   content?: string;
   animalTypeSlugs?: string;
+  featuredImageId?: string;
 }
 
 const toTermInputId = (term: { id?: string; databaseId: number }): string => {
@@ -57,33 +56,29 @@ const toTermInputId = (term: { id?: string; databaseId: number }): string => {
 };
 
 interface PageProps {
-  params: Promise<{ id: string }>;
+  params: { id: string };
 }
 
 export default function EditAnimalPage({ params }: PageProps) {
-  const { id } = use(params);
+  const slug = decodeURIComponent(params.id);
   const router = useRouter();
-  
+
   // GraphQL로 동물 데이터 가져오기
   const { data, loading, error } = useQuery<GetAnimalBySlugData>(GET_ANIMAL_BY_SLUG, {
-    variables: { id },
-    skip: !id,
+    variables: { id: slug },
+    skip: !slug,
   });
   const { data: taxonomyData } = useQuery<GetAnimalTaxonomiesData>(GET_ANIMAL_TAXONOMIES);
-  
+
   // Update mutation
   const [updateAnimal, { loading: isUpdating }] = useMutation<UpdateAnimalData, UpdateAnimalVariables>(UPDATE_ANIMAL, {
     refetchQueries: ['GetAdminAnimals', 'GetAnimalBySlug'],
-    onCompleted: () => {
-      toast.success('동물 정보가 수정되었습니다.');
-      router.push('/admin/animals');
-    },
     onError: (error) => {
       toast.error(`수정 실패: ${error.message}`);
       setIsSubmitting(false);
     }
   });
-  
+
   // Delete mutation
   const [deleteAnimal, { loading: isDeleting }] = useMutation<DeleteAnimalData, DeleteAnimalVariables>(DELETE_ANIMAL, {
     refetchQueries: ['GetAdminAnimals'],
@@ -95,7 +90,7 @@ export default function EditAnimalPage({ params }: PageProps) {
       toast.error(`삭제 실패: ${error.message}`);
     }
   });
-  
+
   const [formData, setFormData] = useState<AnimalInput>(initialFormState);
   const [errors, setErrors] = useState<FormErrors>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -110,12 +105,12 @@ export default function EditAnimalPage({ params }: PageProps) {
   useEffect(() => {
     if (data?.animal) {
       const animal = data.animal;
-      
+
       // 타입 매핑
       const typeSlugs = animal.animalTypes?.nodes?.map(n => n.slug) || [];
       const statusSlug = animal.animalStatuses?.nodes?.[0]?.slug || 'available';
       const gender = animal.animalFields?.gender || '미상';
-      
+
       setFormData({
         title: animal.title,
         excerpt: animal.excerpt?.replace(/<[^>]*>/g, '') || '',
@@ -126,8 +121,6 @@ export default function EditAnimalPage({ params }: PageProps) {
           breed: animal.animalFields?.breed || '',
           gender: gender as '남아' | '여아' | '미상',
           weight: animal.animalFields?.weight || '',
-          rescueDate: '',
-          rescueLocation: '',
           personality: animal.animalFields?.personality || '',
           medicalHistory: animal.animalFields?.medicalHistory || '',
           hashtags: animal.animalFields?.hashtags || '',
@@ -148,10 +141,10 @@ export default function EditAnimalPage({ params }: PageProps) {
   }, [error, router]);
 
   // 필드 변경 핸들러
-  const handleChange = (field: keyof AnimalInput, value: string | string[]) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
+  const handleChange = (field: keyof AnimalInput, value: string | string[] | number | undefined) => {
+    setFormData((prev) => ({ ...prev, [field]: value }));
     if (errors[field as keyof FormErrors]) {
-      setErrors(prev => ({ ...prev, [field]: undefined }));
+      setErrors((prev) => ({ ...prev, [field]: undefined }));
     }
   };
 
@@ -180,7 +173,7 @@ export default function EditAnimalPage({ params }: PageProps) {
   // 폼 검증
   const validateForm = (): boolean => {
     const newErrors: FormErrors = {};
-    
+
     if (!formData.title.trim()) {
       newErrors.title = '이름을 입력해주세요.';
     }
@@ -193,7 +186,7 @@ export default function EditAnimalPage({ params }: PageProps) {
     if (formData.animalTypeSlugs.length === 0) {
       newErrors.animalTypeSlugs = '동물 타입을 선택해주세요.';
     }
-    
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -208,9 +201,9 @@ export default function EditAnimalPage({ params }: PageProps) {
       toast.error('필수 항목을 모두 입력해주세요.');
       return;
     }
-    
+
     setIsSubmitting(true);
-    
+
     try {
       const animalTypeIds = formData.animalTypeSlugs
         .map((slug) => typeIdBySlug.get(slug))
@@ -233,18 +226,42 @@ export default function EditAnimalPage({ params }: PageProps) {
           animalTypes: {
             nodes: animalTypeIds.map((id) => ({ id })),
           },
-          animalStatuses: {
+          animalStatuses: animalStatusId ? {
             nodes: [{ id: animalStatusId }],
-          },
-          age: formData.animalFields.age,
-          breed: formData.animalFields.breed,
-          gender: formData.animalFields.gender,
-          weight: formData.animalFields.weight,
-          personality: formData.animalFields.personality,
-          medicalHistory: formData.animalFields.medicalHistory,
-          hashtags: formData.animalFields.hashtags,
+          } : undefined,
         }
       });
+
+      const wpUrl = process.env.NEXT_PUBLIC_WORDPRESS_API_URL?.replace('/graphql', '');
+      const token = (await import('@/lib/auth')).getAuthToken() || '';
+      const postId = data.animal.databaseId.toString();
+
+      // 2단계: ACF 필드 저장 (AJAX)
+      const fieldsForm = new FormData();
+      fieldsForm.append('action', 'rehoming_save_animal_fields');
+      fieldsForm.append('token', token);
+      fieldsForm.append('post_id', postId);
+      fieldsForm.append('age', formData.animalFields.age);
+      fieldsForm.append('breed', formData.animalFields.breed);
+      fieldsForm.append('gender', formData.animalFields.gender);
+      fieldsForm.append('weight', formData.animalFields.weight);
+      fieldsForm.append('personality', formData.animalFields.personality);
+      fieldsForm.append('medicalHistory', formData.animalFields.medicalHistory);
+      fieldsForm.append('hashtags', formData.animalFields.hashtags);
+      await fetch(`${wpUrl}/wp-admin/admin-ajax.php`, { method: 'POST', body: fieldsForm });
+
+      // 3단계: 썸네일 연결 (AJAX)
+      if (formData.featuredImageId) {
+        const thumbForm = new FormData();
+        thumbForm.append('action', 'rehoming_set_thumbnail');
+        thumbForm.append('token', token);
+        thumbForm.append('post_id', postId);
+        thumbForm.append('attachment_id', String(formData.featuredImageId));
+        await fetch(`${wpUrl}/wp-admin/admin-ajax.php`, { method: 'POST', body: thumbForm });
+      }
+
+      toast.success('동물 정보가 수정되었습니다.');
+      router.push('/admin/animals');
     } catch (error) {
       console.error('Update animal error:', error);
       setIsSubmitting(false);
@@ -260,7 +277,7 @@ export default function EditAnimalPage({ params }: PageProps) {
     if (!confirm('정말로 이 동물 정보를 삭제하시겠습니까?')) {
       return;
     }
-    
+
     try {
       await deleteAnimal({
         variables: { id: data.animal.databaseId.toString() }
@@ -317,25 +334,18 @@ export default function EditAnimalPage({ params }: PageProps) {
             </CardHeader>
             <CardContent>
               <ImageUpload
-                value={formData.featuredImage}
-                onChange={(url) => handleChange('featuredImage', url)}
-                previewHeight={200}
+                value={formData.featuredImageUrl || formData.featuredImage}
+                onChange={(url) => handleChange('featuredImageUrl', url)}
+                onUploadComplete={(id, url) => {
+                  handleChange('featuredImageId', id);
+                  handleChange('featuredImageUrl', url);
+                }}
+                error={errors.featuredImageId}
               />
             </CardContent>
           </Card>
 
-          <Card>
-            <CardHeader>
-              <CardTitle>상세 이미지</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <ImageUpload
-                value={formData.animalFields.image}
-                onChange={(url) => handleAnimalFieldChange('image', url)}
-                previewHeight={200}
-              />
-            </CardContent>
-          </Card>
+
         </div>
 
         {/* 오른쪽: 폼 섹션 */}

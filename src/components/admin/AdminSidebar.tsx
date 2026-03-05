@@ -3,14 +3,13 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { 
-  LayoutDashboard, 
-  PawPrint, 
-  MessageSquare, 
-  Activity, 
-  HeartHandshake, 
-  ChevronDown, 
-  Settings,
+import {
+  LayoutDashboard,
+  PawPrint,
+  MessageSquare,
+  Activity,
+  HeartHandshake,
+  ChevronDown,
   LogOut,
 } from 'lucide-react';
 import { Sheet, SheetContent } from '@/components/ui/sheet';
@@ -86,24 +85,31 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({ isOpen, onClose }) =
       ],
     },
     {
-      title: '입양 후기 관리',
+      title: '입양 후기',
       path: '/admin/reviews',
       icon: <MessageSquare className="h-5 w-5" />,
+      subItems: [
+        { title: '후기 목록', path: '/admin/reviews' },
+        { title: '후기 등록', path: '/admin/reviews/new' },
+      ],
     },
     {
-      title: '활동/프로젝트 관리',
-      path: '/admin/projects',
+      title: '활동/프로젝트',
+      path: '/admin/activities',
       icon: <Activity className="h-5 w-5" />,
+      subItems: [
+        { title: '활동 목록', path: '/admin/activities' },
+        { title: '활동 등록', path: '/admin/activities/new' },
+      ],
     },
     {
-      title: '후원/봉사 게시판 관리',
-      path: '/admin/boards',
+      title: '후원/봉사 게시판',
+      path: '/admin/support',
       icon: <HeartHandshake className="h-5 w-5" />,
-    },
-    {
-      title: '설정',
-      path: '/admin/settings',
-      icon: <Settings className="h-5 w-5" />,
+      subItems: [
+        { title: '게시글 목록', path: '/admin/support' },
+        { title: '게시글 작성', path: '/admin/support/new' },
+      ],
     },
   ];
 

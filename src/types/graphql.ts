@@ -100,8 +100,6 @@ export interface AnimalFields {
     breed?: string;
     hashtags?: string;
     weight?: string;
-    rescueDate?: string;
-    rescueLocation?: string;
     personality?: string;
     medicalHistory?: string;
     image?: {
@@ -109,6 +107,7 @@ export interface AnimalFields {
             sourceUrl: string;
         };
     };
+}
 }
 
 export interface GetAnimalBySlugData {

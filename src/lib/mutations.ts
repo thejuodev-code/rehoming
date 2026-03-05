@@ -50,13 +50,7 @@ export const CREATE_ANIMAL = gql`
     $status: PostStatusEnum
     $animalTypes: AnimalAnimalTypesInput
     $animalStatuses: AnimalAnimalStatusesInput
-    $age: String
-    $breed: String
-    $gender: String
-    $weight: String
-    $personality: String
-    $medicalHistory: String
-    $hashtags: String
+    $animalFields: AnimalFieldsInput
   ) {
     createAnimal(
       input: {
@@ -66,13 +60,7 @@ export const CREATE_ANIMAL = gql`
         status: $status
         animalTypes: $animalTypes
         animalStatuses: $animalStatuses
-        age: $age
-        breed: $breed
-        gender: $gender
-        weight: $weight
-        personality: $personality
-        medicalHistory: $medicalHistory
-        hashtags: $hashtags
+        animalFields: $animalFields
       }
     ) {
       animal {
@@ -130,13 +118,7 @@ export const UPDATE_ANIMAL = gql`
     $status: PostStatusEnum
     $animalTypes: AnimalAnimalTypesInput
     $animalStatuses: AnimalAnimalStatusesInput
-    $age: String
-    $breed: String
-    $gender: String
-    $weight: String
-    $personality: String
-    $medicalHistory: String
-    $hashtags: String
+    $animalFields: AnimalFieldsInput
   ) {
     updateAnimal(
       input: {
@@ -147,13 +129,7 @@ export const UPDATE_ANIMAL = gql`
         status: $status
         animalTypes: $animalTypes
         animalStatuses: $animalStatuses
-        age: $age
-        breed: $breed
-        gender: $gender
-        weight: $weight
-        personality: $personality
-        medicalHistory: $medicalHistory
-        hashtags: $hashtags
+        animalFields: $animalFields
       }
     ) {
       animal {
@@ -226,6 +202,17 @@ export interface AnimalTermsInput {
   nodes?: AnimalTermNodeInput[];
 }
 
+export interface AnimalFieldsInput {
+  age?: string;
+  breed?: string;
+  gender?: string;
+  weight?: string;
+  personality?: string;
+  medicalHistory?: string;
+  hashtags?: string;
+  image?: number; // image attachment ID
+}
+
 /**
  * Variables for CREATE_ANIMAL mutation
  */
@@ -234,15 +221,14 @@ export interface CreateAnimalVariables {
   content?: string;
   excerpt?: string;
   status?: 'PUBLISH' | 'DRAFT' | 'PENDING';
-  animalTypes?: AnimalTermsInput;
-  animalStatuses?: AnimalTermsInput;
-  age?: string;
-  breed?: string;
-  gender?: string;
-  weight?: string;
-  personality?: string;
-  medicalHistory?: string;
-  hashtags?: string;
+  featuredImageId?: number;
+  animalTypes?: {
+    nodes: Array<{ id: string }>;
+  };
+  animalStatuses?: {
+    nodes: Array<{ id: string }>;
+  };
+  animalFields?: AnimalFieldsInput;
 }
 
 /**
@@ -254,15 +240,14 @@ export interface UpdateAnimalVariables {
   content?: string;
   excerpt?: string;
   status?: 'PUBLISH' | 'DRAFT' | 'PENDING';
-  animalTypes?: AnimalTermsInput;
-  animalStatuses?: AnimalTermsInput;
-  age?: string;
-  breed?: string;
-  gender?: string;
-  weight?: string;
-  personality?: string;
-  medicalHistory?: string;
-  hashtags?: string;
+  featuredImageId?: number;
+  animalTypes?: {
+    nodes: Array<{ id: string }>;
+  };
+  animalStatuses?: {
+    nodes: Array<{ id: string }>;
+  };
+  animalFields?: AnimalFieldsInput;
 }
 
 /**
@@ -375,9 +360,7 @@ export const CREATE_ACTIVITY = gql`
     $content: String
     $excerpt: String
     $status: PostStatusEnum
-    $featuredImageId: ID
-    $activityFields: ActivityFieldsInput
-    $projectCategories: [ID]
+    $projectCategories: ProjectProjectCategoriesInput
   ) {
     createProject(
       input: {
@@ -385,8 +368,6 @@ export const CREATE_ACTIVITY = gql`
         content: $content
         excerpt: $excerpt
         status: $status
-        featuredImageId: $featuredImageId
-        activityFields: $activityFields
         projectCategories: $projectCategories
       }
     ) {
@@ -405,9 +386,7 @@ export const UPDATE_ACTIVITY = gql`
     $content: String
     $excerpt: String
     $status: PostStatusEnum
-    $featuredImageId: ID
-    $activityFields: ActivityFieldsInput
-    $projectCategories: [ID]
+    $projectCategories: ProjectProjectCategoriesInput
   ) {
     updateProject(
       input: {
@@ -416,8 +395,6 @@ export const UPDATE_ACTIVITY = gql`
         content: $content
         excerpt: $excerpt
         status: $status
-        featuredImageId: $featuredImageId
-        activityFields: $activityFields
         projectCategories: $projectCategories
       }
     ) {
@@ -448,9 +425,9 @@ export interface CreateActivityVariables {
   content?: string;
   excerpt?: string;
   status?: 'PUBLISH' | 'DRAFT' | 'PENDING';
-  featuredImageId?: string;
-  activityFields?: ActivityFieldsInput;
-  projectCategories?: string[];
+  projectCategories?: {
+    nodes: Array<{ slug: string }>;
+  };
 }
 
 export interface UpdateActivityVariables extends CreateActivityVariables {
@@ -491,8 +468,6 @@ export const CREATE_REVIEW = gql`
     $content: String
     $excerpt: String
     $status: PostStatusEnum
-    $featuredImageId: ID
-    $reviewFields: ReviewFieldsInput
   ) {
     createReview(
       input: {
@@ -500,8 +475,6 @@ export const CREATE_REVIEW = gql`
         content: $content
         excerpt: $excerpt
         status: $status
-        featuredImageId: $featuredImageId
-        reviewFields: $reviewFields
       }
     ) {
       review {
@@ -519,8 +492,6 @@ export const UPDATE_REVIEW = gql`
     $content: String
     $excerpt: String
     $status: PostStatusEnum
-    $featuredImageId: ID
-    $reviewFields: ReviewFieldsInput
   ) {
     updateReview(
       input: {
@@ -529,8 +500,6 @@ export const UPDATE_REVIEW = gql`
         content: $content
         excerpt: $excerpt
         status: $status
-        featuredImageId: $featuredImageId
-        reviewFields: $reviewFields
       }
     ) {
       review {
@@ -563,8 +532,6 @@ export interface CreateReviewVariables {
   content?: string;
   excerpt?: string;
   status?: 'PUBLISH' | 'DRAFT' | 'PENDING';
-  featuredImageId?: string;
-  reviewFields?: ReviewFieldsInput;
 }
 
 export interface UpdateReviewVariables extends CreateReviewVariables {
@@ -604,15 +571,13 @@ export const CREATE_SUPPORT_POST = gql`
     $title: String!
     $content: String
     $status: PostStatusEnum
-    $supportMeta: SupportMetaInput
-    $supportCategories: [ID]
+    $supportCategories: SupportPostSupportCategoriesInput
   ) {
     createSupportPost(
       input: {
         title: $title
         content: $content
         status: $status
-        supportMeta: $supportMeta
         supportCategories: $supportCategories
       }
     ) {
@@ -630,8 +595,7 @@ export const UPDATE_SUPPORT_POST = gql`
     $title: String
     $content: String
     $status: PostStatusEnum
-    $supportMeta: SupportMetaInput
-    $supportCategories: [ID]
+    $supportCategories: SupportPostSupportCategoriesInput
   ) {
     updateSupportPost(
       input: {
@@ -639,7 +603,6 @@ export const UPDATE_SUPPORT_POST = gql`
         title: $title
         content: $content
         status: $status
-        supportMeta: $supportMeta
         supportCategories: $supportCategories
       }
     ) {
@@ -669,8 +632,9 @@ export interface CreateSupportPostVariables {
   title: string;
   content?: string;
   status?: 'PUBLISH' | 'DRAFT' | 'PENDING';
-  supportMeta?: SupportMetaInput;
-  supportCategories?: string[];
+  supportCategories?: {
+    nodes: Array<{ slug: string }>;
+  };
 }
 
 export interface UpdateSupportPostVariables extends CreateSupportPostVariables {

@@ -4,10 +4,12 @@ import React, { useState, useRef, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { UploadCloud, X } from 'lucide-react';
+import { getAuthToken } from '@/lib/auth';
 
 export interface ImageUploadProps {
   value?: string; // image URL
   onChange: (url: string) => void;
+  onUploadComplete?: (id: number, url: string) => void;
   accept?: string; // default: 'image/*'
   maxSize?: number; // MB, default: 5
   previewWidth?: number;
@@ -18,12 +20,14 @@ export interface ImageUploadProps {
 export function ImageUpload({
   value,
   onChange,
+  onUploadComplete,
   accept = 'image/*',
   maxSize = 5,
   previewWidth = 200,
   previewHeight = 200,
   error: externalError,
 }: ImageUploadProps) {
+  const [isUploading, setIsUploading] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
   const [internalError, setInternalError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -45,11 +49,55 @@ export function ImageUpload({
       return;
     }
 
-    // Mock upload
-    const mockUrl = URL.createObjectURL(file);
-    console.log('Mock upload:', mockUrl);
-    onChange(mockUrl);
-  }, [accept, maxSize, onChange]);
+    // Upload to WordPress via REST API
+    setIsUploading(true);
+
+    const formData = new FormData();
+    formData.append('action', 'rehoming_upload_image');
+    formData.append('file', file);
+
+    const token = getAuthToken() || '';
+    formData.append('token', token); // Send token in body to avoid header stripping
+
+    const wpUrl = process.env.NEXT_PUBLIC_WORDPRESS_API_URL?.replace('/graphql', '');
+
+    fetch(`${wpUrl}/wp-admin/admin-ajax.php`, {
+      method: 'POST',
+      body: formData
+    })
+      .then(async res => {
+        let errData;
+        try {
+          errData = await res.json();
+        } catch (e) {
+          errData = { success: false, data: { message: '서버 응답을 읽을 수 없습니다.' } };
+        }
+
+        if (!res.ok || errData.success === false) {
+          throw new Error(errData.data?.message || '업로드 중 알 수 없는 서버 에러가 발생했습니다.');
+        }
+        return errData;
+      })
+      .then(response => {
+        const data = response.data; // WordPress standard AJAX success format returns { success: true, data: {...} }
+        console.log('Upload success (AJAX API):', data, response);
+        // Force https to avoid Mixed Content blocking when WP returns http:// URLs
+        const safeUrl = data.url ? data.url.replace(/^http:\/\//, 'https://') : '';
+        if (onUploadComplete) {
+          onUploadComplete(data.id, safeUrl);
+        } else {
+          onChange(safeUrl);
+        }
+      })
+      .catch(err => {
+        console.error('WP REST API Error:', err);
+        setInternalError(`업로드 실패: ${err.message}`);
+      })
+      .finally(() => {
+        setIsUploading(false);
+      });
+
+  }, [accept, maxSize, onChange, onUploadComplete]);
 
   const onDragOver = useCallback((e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
@@ -98,7 +146,7 @@ export function ImageUpload({
         onDragOver={onDragOver}
         onDragLeave={onDragLeave}
         onDrop={onDrop}
-        onClick={() => fileInputRef.current?.click()}
+        onClick={(e) => { e.stopPropagation(); fileInputRef.current?.click(); }}
       >
         <input
           type="file"
@@ -136,13 +184,14 @@ export function ImageUpload({
             <p className="mb-2 text-sm text-muted-foreground">
               <span className="font-semibold text-primary">클릭하여 업로드</span> 또는 드래그 앤 드롭
             </p>
+            {isUploading && <p className="text-sm text-primary mb-2 font-bold animate-pulse">업로드 중...</p>}
             <Badge variant="secondary" className="mt-2">
               최대 {maxSize}MB
             </Badge>
           </div>
         )}
       </div>
-      
+
       {error && (
         <p className="mt-2 text-sm text-destructive">{error}</p>
       )}

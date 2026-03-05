@@ -1,5 +1,5 @@
 import Link from "next/link";
-import ImagePlaceholder from "@/components/common/ImagePlaceholder";
+
 
 export default function Footer() {
     return (
@@ -12,7 +12,6 @@ export default function Footer() {
                     <div className="md:col-span-12 lg:col-span-4 flex flex-col items-start leading-relaxed">
                         <Link href="/" className="inline-block mb-8">
                             <div className="flex items-center gap-4">
-                                <ImagePlaceholder width="48px" height="48px" text="로고" className="rounded-xl border-gray-700 bg-gray-800/50 !text-gray-400" />
                                 <h2 className="text-3xl font-bold tracking-tighter text-white">
                                     리호밍센터 <span className="text-gray-500 font-light text-xl">Rehoming</span>
                                 </h2>

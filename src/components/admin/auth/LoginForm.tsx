@@ -35,9 +35,6 @@ export function LoginForm() {
       <Card className="w-full max-w-md">
         <CardHeader>
           <CardTitle className="text-2xl">관리자 로그인</CardTitle>
-          <CardDescription>
-            WordPress 계정으로 로그인하세요
-          </CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">

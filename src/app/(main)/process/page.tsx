@@ -327,14 +327,6 @@ export default function ProcessPage() {
             {/* 5. Final Call To Action */}
             <section className="relative py-32 bg-white overflow-hidden">
                 <div className="max-w-4xl mx-auto px-6 text-center z-10 relative">
-                    <div className="w-24 h-24 rounded-full overflow-hidden mx-auto mb-8 shadow-xl ring-4 ring-brand-trust/10 relative">
-                        <Image
-                            src="/images/process1.jpg"
-                            alt="리호밍 대표 로고 이미지"
-                            fill
-                            className="object-cover"
-                        />
-                    </div>
                     <motion.h2
                         initial={{ opacity: 0, y: 40 }}
                         whileInView={{ opacity: 1, y: 0 }}
@@ -371,21 +363,19 @@ export default function ProcessPage() {
                         viewport={{ once: false }}
                         transition={{
                             duration: 0.8,
-                            delay: 0.8, // Delayed button entrance
+                            delay: 0.8,
                             ease: [0.16, 1, 0.3, 1]
                         }}
-                        whileHover={{ scale: 1.02 }}
+                        whileHover={{ scale: 1.05 }}
                         whileTap={{ scale: 0.98 }}
                         className="inline-block"
                     >
                         <Link
                             href="/adopt"
-                            className="flex items-center justify-center px-8 py-5 bg-gradient-to-r from-brand-trust to-blue-600 text-white font-bold text-lg md:text-xl rounded-full shadow-xl shadow-brand-trust/20 hover:shadow-brand-trust/40 transition-all group"
+                            className="flex items-center justify-center px-12 py-6 bg-gradient-to-r from-brand-trust to-blue-600 text-white font-bold text-xl md:text-2xl rounded-full shadow-2xl shadow-brand-trust/30 hover:shadow-brand-trust/50 transition-all group hover:from-blue-600 hover:to-brand-trust"
                         >
-                            <span className="mr-3">네, 준비가 되었습니다</span>
-                            <span className="inline-block px-3 py-1 bg-white/20 rounded-full text-sm font-medium tracking-wide">
-                                아이들 보러가기 →
-                            </span>
+                            <span>입양 시작하기</span>
+                            <span className="ml-3 text-2xl group-hover:translate-x-1 transition-transform">→</span>
                         </Link>
                     </motion.div>
                 </div>

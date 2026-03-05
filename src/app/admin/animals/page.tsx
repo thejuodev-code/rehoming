@@ -192,7 +192,7 @@ export default function AnimalsPage() {
               </TableRow>
             ) : (
               filteredData.map((animal) => (
-                <TableRow key={animal.id}>
+                <TableRow key={animal.id} className="cursor-pointer hover:bg-slate-50" onClick={() => router.push(`/admin/animals/${animal.slug}`)}>
                   <TableCell>
                     <div className="h-12 w-12 overflow-hidden rounded-md bg-slate-100">
                       {animal.imageUrl ? (
@@ -208,7 +208,11 @@ export default function AnimalsPage() {
                       )}
                     </div>
                   </TableCell>
-                  <TableCell className="font-medium text-slate-900">{animal.title}</TableCell>
+                  <TableCell>
+                    <Link href={`/admin/animals/${animal.slug}`} className="font-medium text-slate-900 hover:text-blue-600 hover:underline">
+                      {animal.title}
+                    </Link>
+                  </TableCell>
                   <TableCell>
                     <Badge variant="secondary">{animal.type}</Badge>
                   </TableCell>
@@ -218,7 +222,7 @@ export default function AnimalsPage() {
                     <Badge variant={getStatusVariant(animal.statusSlug)}>{animal.status}</Badge>
                   </TableCell>
                   <TableCell className="text-slate-500">{animal.createdAt}</TableCell>
-                  <TableCell className="text-right">
+                  <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
                         <Button variant="ghost" className="h-8 w-8 p-0">

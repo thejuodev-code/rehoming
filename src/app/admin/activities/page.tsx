@@ -2,12 +2,12 @@
 
 import React, { useState, useMemo } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useQuery, useMutation } from '@apollo/client/react';
 import { GET_ACTIVITIES } from '@/lib/queries';
 import { DeleteActivityData, DeleteActivityVariables, DELETE_ACTIVITY } from '@/lib/mutations';
 import { GetActivitiesData } from '@/types/graphql';
 import { Button } from '@/components/ui/button';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Table, TableHeader, TableBody, TableRow, TableCell, TableHead } from '@/components/ui/table';
@@ -16,13 +16,16 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { MoreHorizontal, Pencil, Trash2, Search, Loader2, ImageIcon } from 'lucide-react';
 
 export default function ActivitiesPage() {
-  const { data, loading, error } = useQuery<GetActivitiesData>(GET_ACTIVITIES);
+  const router = useRouter();
+  const { data, loading, error } = useQuery<GetActivitiesData>(GET_ACTIVITIES, {
+    fetchPolicy: 'network-only',
+    nextFetchPolicy: 'cache-first',
+  });
   const [deleteActivity] = useMutation<DeleteActivityData, DeleteActivityVariables>(DELETE_ACTIVITY, {
     refetchQueries: ['GetActivities'],
   });
   
   const [searchTerm, setSearchTerm] = useState('');
-  const [typeFilter, setTypeFilter] = useState('all');
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [selectedActivityId, setSelectedActivityId] = useState<number | null>(null);
 
@@ -35,7 +38,6 @@ export default function ActivitiesPage() {
       id: activity.databaseId,
       slug: activity.slug,
       title: activity.title,
-      type: activity.activityFields?.type || '-',
       category: activity.projectCategories?.nodes?.[0]?.name || '-',
       imageUrl: activity.featuredImage?.node?.sourceUrl,
       createdAt: activity.date ? new Date(activity.date).toLocaleDateString('ko-KR') : '-',
@@ -48,12 +50,9 @@ export default function ActivitiesPage() {
       // 검색어 필터링
       const matchesSearch = activity.title.toLowerCase().includes(searchTerm.toLowerCase());
       
-      // 타입 필터링
-      const matchesType = typeFilter === 'all' || activity.type === typeFilter;
-      
-      return matchesSearch && matchesType;
+      return matchesSearch;
     });
-  }, [activities, searchTerm, typeFilter]);
+  }, [activities, searchTerm]);
 
   // 삭제 모달 열기
   const handleDeleteClick = (id: number) => {
@@ -72,15 +71,6 @@ export default function ActivitiesPage() {
     }
   };
 
-
-  // 활동 타입 옵션 (유니크한 값 추출)
-  const typeOptions = useMemo(() => {
-    const types = Array.from(new Set(activities.map(a => a.type)));
-    return [
-      { value: 'all', label: '모든 타입' },
-      ...types.map(type => ({ value: type, label: type }))
-    ];
-  }, [activities]);
 
   if (loading) {
     return (
@@ -118,20 +108,6 @@ export default function ActivitiesPage() {
             className="pl-9"
           />
         </div>
-        <div className="w-full sm:w-48">
-          <Select value={typeFilter} onValueChange={setTypeFilter}>
-            <SelectTrigger>
-              <SelectValue placeholder="타입 필터" />
-            </SelectTrigger>
-            <SelectContent>
-              {typeOptions.map((option) => (
-                <SelectItem key={option.value} value={option.value}>
-                  {option.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
       </div>
 
       <div className="rounded-md border">
@@ -140,7 +116,6 @@ export default function ActivitiesPage() {
             <TableRow>
               <TableHead>이미지</TableHead>
               <TableHead>제목</TableHead>
-              <TableHead>타입</TableHead>
               <TableHead>카테고리</TableHead>
               <TableHead>등록일</TableHead>
               <TableHead className="text-right">관리</TableHead>
@@ -149,13 +124,13 @@ export default function ActivitiesPage() {
           <TableBody>
             {filteredData.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={6} className="h-24 text-center">
+                <TableCell colSpan={5} className="h-24 text-center">
                   등록된 활동이 없습니다.
                 </TableCell>
               </TableRow>
             ) : (
               filteredData.map((activity) => (
-                <TableRow key={activity.id}>
+                <TableRow key={activity.id} className="cursor-pointer hover:bg-slate-50" onClick={() => router.push(`/admin/activities/${activity.slug}`)}>
                   <TableCell>
                     <div className="h-12 w-12 overflow-hidden rounded-md bg-slate-100">
                       {activity.imageUrl ? (
@@ -171,15 +146,16 @@ export default function ActivitiesPage() {
                       )}
                     </div>
                   </TableCell>
-                  <TableCell className="font-medium text-slate-900">{activity.title}</TableCell>
                   <TableCell>
-                    <Badge variant="secondary">{activity.type}</Badge>
+                    <Link href={`/admin/activities/${activity.slug}`} className="font-medium text-slate-900 hover:text-blue-600 hover:underline">
+                      {activity.title}
+                    </Link>
                   </TableCell>
                   <TableCell>
                     <Badge variant="outline">{activity.category}</Badge>
                   </TableCell>
                   <TableCell className="text-slate-500">{activity.createdAt}</TableCell>
-                  <TableCell className="text-right">
+                  <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
                         <Button variant="ghost" className="h-8 w-8 p-0">

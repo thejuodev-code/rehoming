@@ -4,13 +4,13 @@ export interface AnimalInput {
   excerpt: string;
   content: string;
   featuredImage?: string;
+  featuredImageId?: number;
+  featuredImageUrl?: string;
   animalFields: {
     age: string;
     breed: string;
     gender: '남아' | '여아' | '미상';
     weight: string;
-    rescueDate: string;
-    rescueLocation: string;
     personality: string;
     medicalHistory: string;
     hashtags: string;

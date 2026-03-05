@@ -162,8 +162,6 @@ export const GET_ANIMALS = gql`
           gender
           hashtags
           weight
-          rescueDate
-          rescueLocation
           personality
           medicalHistory
           image {
@@ -210,8 +208,6 @@ export const GET_ADMIN_ANIMALS = gql`
           gender
           hashtags
           weight
-          rescueDate
-          rescueLocation
           personality
           medicalHistory
           image {
@@ -278,8 +274,6 @@ export const GET_ANIMAL_BY_SLUG = gql`
         gender
         hashtags
         weight
-        rescueDate
-        rescueLocation
         personality
         medicalHistory
         image {

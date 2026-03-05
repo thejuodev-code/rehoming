@@ -2,10 +2,12 @@
 
 import React, { useState, useMemo } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useQuery, useMutation } from '@apollo/client/react';
 import { GET_REVIEWS } from '@/lib/queries';
 import { GetReviewsData } from '@/types/graphql';
-import { DELETE_REVIEW, DeleteReviewData, DeleteReviewVariables, UPDATE_REVIEW, UpdateReviewData, UpdateReviewVariables } from '@/lib/mutations';
+import { DELETE_REVIEW, DeleteReviewData, DeleteReviewVariables } from '@/lib/mutations';
+import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
@@ -15,13 +17,13 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { MoreHorizontal, Pencil, Trash2, Search, Loader2, ImageIcon } from 'lucide-react';
 export default function ReviewsPage() {
-  const { data, loading, error } = useQuery<GetReviewsData>(GET_REVIEWS, {
+  const router = useRouter();
+  const { data, loading, error, refetch } = useQuery<GetReviewsData>(GET_REVIEWS, {
     variables: { first: 100 },
+    fetchPolicy: 'network-only',
+    nextFetchPolicy: 'cache-first',
   });
   const [deleteReview] = useMutation<DeleteReviewData, DeleteReviewVariables>(DELETE_REVIEW, {
-    refetchQueries: ['GetReviews'],
-  });
-  const [updateReview] = useMutation<UpdateReviewData, UpdateReviewVariables>(UPDATE_REVIEW, {
     refetchQueries: ['GetReviews'],
   });
   
@@ -84,26 +86,23 @@ export default function ReviewsPage() {
     }
   };
 
-  // 고정 토글
+  // 고정 토글 (AJAX로 ACF 필드 직접 저장)
   const handleTogglePin = async (reviewId: number, currentPinned: boolean) => {
-    const targetReview = reviews.find((review) => review.id === reviewId);
-    if (!targetReview) {
-      return;
-    }
+    try {
+      const wpUrl = process.env.NEXT_PUBLIC_WORDPRESS_API_URL?.replace('/graphql', '');
+      const token = (await import('@/lib/auth')).getAuthToken() || '';
 
-    await updateReview({
-      variables: {
-        id: reviewId.toString(),
-        title: targetReview.title,
-        status: 'PUBLISH',
-        reviewFields: {
-          authorName: targetReview.authorName,
-          animalName: targetReview.animalName,
-          animalType: targetReview.animalType,
-          isPinned: !currentPinned,
-        },
-      },
-    });
+      const fieldsForm = new FormData();
+      fieldsForm.append('action', 'rehoming_save_review_fields');
+      fieldsForm.append('token', token);
+      fieldsForm.append('post_id', String(reviewId));
+      fieldsForm.append('isPinned', !currentPinned ? 'true' : 'false');
+      await fetch(`${wpUrl}/wp-admin/admin-ajax.php`, { method: 'POST', body: fieldsForm });
+
+      refetch();
+    } catch (error) {
+      toast.error('고정 상태 변경에 실패했습니다.');
+    }
   };
 
 
@@ -189,7 +188,7 @@ export default function ReviewsPage() {
               </TableRow>
             ) : (
               filteredData.map((review) => (
-                <TableRow key={review.id}>
+                <TableRow key={review.id} className="cursor-pointer hover:bg-slate-50" onClick={() => router.push(`/admin/reviews/${review.slug}`)}>
                   <TableCell>
                     <div className="h-12 w-12 overflow-hidden rounded-md bg-slate-100">
                       {review.imageUrl ? (
@@ -205,7 +204,11 @@ export default function ReviewsPage() {
                       )}
                     </div>
                   </TableCell>
-                  <TableCell className="font-medium text-slate-900">{review.title}</TableCell>
+                  <TableCell>
+                    <Link href={`/admin/reviews/${review.slug}`} className="font-medium text-slate-900 hover:text-blue-600 hover:underline">
+                      {review.title}
+                    </Link>
+                  </TableCell>
                   <TableCell className="text-slate-600">{review.authorName}</TableCell>
                   <TableCell className="text-slate-600">{review.animalName}</TableCell>
                   <TableCell>
@@ -213,7 +216,7 @@ export default function ReviewsPage() {
                       {review.animalType}
                     </Badge>
                   </TableCell>
-                  <TableCell>
+                  <TableCell onClick={(e) => e.stopPropagation()}>
                     <button
                       type="button"
                       onClick={() => handleTogglePin(review.id, review.isPinned)}
@@ -227,7 +230,7 @@ export default function ReviewsPage() {
                     </button>
                   </TableCell>
                   <TableCell className="text-slate-500">{review.createdAt}</TableCell>
-                  <TableCell className="text-right">
+                  <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
                         <Button variant="ghost" className="h-8 w-8 p-0">

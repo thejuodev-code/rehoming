@@ -11,37 +11,33 @@ import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { ImageUpload } from '@/components/admin/ui/ImageUpload';
 import { RichEditor } from '@/components/admin/ui/RichEditor';
-import { ActivityInput } from '@/types/admin';
 import { CREATE_ACTIVITY, CreateActivityData, CreateActivityVariables } from '@/lib/mutations';
+
 const activityCategoryOptions = [
-  { value: 'protection', label: '보호' },
-  { value: 'training', label: '교정' },
-  { value: 'matching', label: '매칭' },
-  { value: 'campaign', label: '캠페인' },
   { value: 'education', label: '교육' },
+  { value: 'rescue', label: '구조' },
+  { value: 'medical', label: '의료' },
+  { value: 'campaign', label: '캠페인' },
+  { value: 'partnership', label: '파트너쉽' },
+  { value: 'donation', label: '후원' },
 ];
 
 export default function NewActivityPage() {
   const router = useRouter();
   const [createActivity] = useMutation<CreateActivityData, CreateActivityVariables>(CREATE_ACTIVITY, {
     refetchQueries: ['GetActivities'],
-    onCompleted: () => {
-      toast.success('활동이 등록되었습니다.');
-      router.push('/admin/activities');
-    },
     onError: (error) => {
       toast.error(`등록 실패: ${error.message}`);
       setIsSubmitting(false);
     },
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
-  
-  // Form state
+
   const [title, setTitle] = useState('');
   const [excerpt, setExcerpt] = useState('');
   const [content, setContent] = useState('');
-  const [featuredImage, setFeaturedImage] = useState('');
-  const [activityType, setActivityType] = useState('');
+  const [featuredImageUrl, setFeaturedImageUrl] = useState('');
+  const [featuredImageId, setFeaturedImageId] = useState<number | undefined>();
   const [impactSummary, setImpactSummary] = useState('');
   const [pintoimpact, setPintoimpact] = useState(false);
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
@@ -56,14 +52,9 @@ export default function NewActivityPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    // Validation
+
     if (!title.trim()) {
       toast.error('제목을 입력해주세요.');
-      return;
-    }
-    if (!activityType.trim()) {
-      toast.error('활동 타입을 입력해주세요.');
       return;
     }
     if (selectedCategories.length === 0) {
@@ -73,38 +64,52 @@ export default function NewActivityPage() {
 
     setIsSubmitting(true);
 
-    const formData: ActivityInput = {
-      title,
-      excerpt,
-      content,
-      featuredImage: featuredImage || undefined,
-      activityFields: {
-        type: activityType,
-        impactSummary,
-        pintoimpact,
-      },
-      projectCategorySlugs: selectedCategories,
-    };
-
     try {
-      await createActivity({
+      // 1단계: GraphQL mutation (표준 WP 필드만)
+      const result = await createActivity({
         variables: {
-          title: formData.title,
-          content: formData.content,
-          excerpt: formData.excerpt,
+          title,
+          content,
+          excerpt,
           status: 'PUBLISH',
-          featuredImageId: undefined,
-          activityFields: {
-            type: formData.activityFields.type,
-            impactSummary: formData.activityFields.impactSummary,
-            pintoimpact: formData.activityFields.pintoimpact,
+          projectCategories: {
+            nodes: selectedCategories.map((slug) => ({ slug })),
           },
-          projectCategories: formData.projectCategorySlugs,
         },
       });
+
+      const newPostId = result.data?.createProject?.project?.databaseId;
+      if (newPostId) {
+        const wpUrl = process.env.NEXT_PUBLIC_WORDPRESS_API_URL?.replace('/graphql', '');
+        const token = (await import('@/lib/auth')).getAuthToken() || '';
+
+        // 2단계: ACF 필드 저장 (AJAX)
+        const fieldsForm = new FormData();
+        fieldsForm.append('action', 'rehoming_save_activity_fields');
+        fieldsForm.append('token', token);
+        fieldsForm.append('post_id', String(newPostId));
+        fieldsForm.append('impactSummary', impactSummary);
+        fieldsForm.append('pintoimpact', pintoimpact ? 'true' : 'false');
+        await fetch(`${wpUrl}/wp-admin/admin-ajax.php`, { method: 'POST', body: fieldsForm });
+
+        // 3단계: 썸네일 연결 (AJAX)
+        if (featuredImageId) {
+          const thumbForm = new FormData();
+          thumbForm.append('action', 'rehoming_set_thumbnail');
+          thumbForm.append('token', token);
+          thumbForm.append('post_id', String(newPostId));
+          thumbForm.append('attachment_id', String(featuredImageId));
+          await fetch(`${wpUrl}/wp-admin/admin-ajax.php`, { method: 'POST', body: thumbForm });
+        }
+
+        // 4단계: 카테고리 연결 (wp_set_object_terms via AJAX or taxonomy already handled)
+        // projectCategories는 GraphQL에서 처리되지 않으므로 별도 처리 필요할 수 있음
+      }
+
+      toast.success('활동이 등록되었습니다.');
+      router.push('/admin/activities');
     } catch (error) {
       console.error('Create activity error:', error);
-      toast.error('등록 중 오류가 발생했습니다.');
       setIsSubmitting(false);
     }
   };
@@ -117,12 +122,16 @@ export default function NewActivityPage() {
 
       <form onSubmit={handleSubmit} className="space-y-6 max-w-4xl">
         <div className="bg-white p-6 rounded-lg shadow-sm border border-slate-200 space-y-6">
-          {/* Featured Image - 상단 배치 */}
+          {/* Featured Image */}
           <div>
             <p className="mb-2 block text-sm font-medium text-slate-700">대표 이미지</p>
             <ImageUpload
-              value={featuredImage}
-              onChange={setFeaturedImage}
+              value={featuredImageUrl}
+              onChange={setFeaturedImageUrl}
+              onUploadComplete={(id, url) => {
+                setFeaturedImageId(id);
+                setFeaturedImageUrl(url);
+              }}
               previewHeight={240}
             />
           </div>
@@ -149,17 +158,6 @@ export default function NewActivityPage() {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="activityType">활동 타입 <span className="text-red-500">*</span></Label>
-            <Input
-              id="activityType"
-              value={activityType}
-              onChange={(e) => setActivityType(e.target.value)}
-              placeholder="예: 캠페인, 모집, 활동, 정보"
-              required
-            />
-          </div>
-
-          <div className="space-y-2">
             <Label htmlFor="impactSummary">임팩트 요약</Label>
             <Textarea
               id="impactSummary"
@@ -169,9 +167,10 @@ export default function NewActivityPage() {
               rows={3}
             />
           </div>
+
           {/* Categories */}
           <div className="space-y-2">
-            <Label>카테고리</Label>
+            <Label>카테고리 <span className="text-red-500">*</span></Label>
             <div className="flex flex-wrap gap-4">
               {activityCategoryOptions.map((option) => (
                 <div key={option.value} className="flex items-center space-x-2">
@@ -187,6 +186,7 @@ export default function NewActivityPage() {
               ))}
             </div>
           </div>
+
           {/* Pintoimpact Toggle */}
           <div className="flex items-center justify-between py-2">
             <div className="flex flex-col space-y-1">
