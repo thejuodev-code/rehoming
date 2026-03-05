@@ -412,6 +412,39 @@ export const GET_SUPPORT_POSTS_FOR_IMPACT = gql`
   }
 `;
 
+// ==========================================
+// Media Items (미디어 관리)
+// ==========================================
+export const GET_MEDIA_ITEMS = gql`
+  query GetMediaItems($first: Int = 100, $after: String) {
+    mediaItems(first: $first, after: $after, where: { orderby: { field: DATE, order: DESC } }) {
+      pageInfo {
+        hasNextPage
+        endCursor
+      }
+      nodes {
+        databaseId
+        title
+        sourceUrl
+        mediaItemUrl
+        mimeType
+        fileSize
+        date
+        mediaDetails {
+          width
+          height
+          sizes {
+            sourceUrl
+            name
+            width
+            height
+          }
+        }
+      }
+    }
+  }
+`;
+
 export const GET_SUPPORT_POST_BY_SLUG = gql`
   query GetSupportPostBySlug($id: ID!) {
     supportPost(id: $id, idType: SLUG) {

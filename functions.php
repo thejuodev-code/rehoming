@@ -734,3 +734,261 @@ function rehoming_handle_save_support_fields() {
 
     wp_send_json_success(['message' => '게시판 ACF 필드 저장 완료', 'post_id' => $post_id, 'saved_fields' => $saved]);
 }
+
+// ==========================================
+// 14. 미디어 사용처 검색 AJAX 핸들러
+// ==========================================
+add_action('wp_ajax_rehoming_find_media_usage', 'rehoming_handle_find_media_usage');
+add_action('wp_ajax_nopriv_rehoming_find_media_usage', 'rehoming_handle_find_media_usage');
+
+function rehoming_handle_find_media_usage() {
+    header('Access-Control-Allow-Origin: *');
+    header('Access-Control-Allow-Methods: POST, OPTIONS');
+    header('Content-Type: application/json');
+
+    if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+        http_response_code(200);
+        exit;
+    }
+
+    // JWT 토큰 검증
+    $token = isset($_POST['token']) ? sanitize_text_field($_POST['token']) : '';
+    if (empty($token)) {
+        wp_send_json_error(['message' => '토큰이 필요합니다.']);
+    }
+
+    try {
+        $decoded = \WPGraphQL\JWT_Authentication\Auth::validate_token($token);
+        if (is_wp_error($decoded) || !isset($decoded->data->user->id)) {
+            wp_send_json_error(['message' => '유효하지 않은 토큰입니다.']);
+        }
+        wp_set_current_user($decoded->data->user->id);
+    } catch (\Exception $e) {
+        wp_send_json_error(['message' => '토큰 검증 오류']);
+    }
+
+    $attachment_id = isset($_POST['attachment_id']) ? intval($_POST['attachment_id']) : 0;
+    if (!$attachment_id || get_post_type($attachment_id) !== 'attachment') {
+        wp_send_json_error(['message' => '유효하지 않은 미디어 ID입니다.']);
+    }
+
+    $usage = [];
+
+    // 1) 대표이미지(썸네일)로 사용 중인 글 검색
+    global $wpdb;
+    $thumbnail_posts = $wpdb->get_results(
+        $wpdb->prepare(
+            "SELECT p.ID, p.post_title, p.post_type
+             FROM {$wpdb->postmeta} pm
+             JOIN {$wpdb->posts} p ON pm.post_id = p.ID
+             WHERE pm.meta_key = '_thumbnail_id'
+               AND pm.meta_value = %s
+               AND p.post_status IN ('publish','draft','pending','private')",
+            $attachment_id
+        ),
+        ARRAY_A
+    );
+
+    foreach ($thumbnail_posts as $post) {
+        $usage[] = [
+            'postId'    => (int) $post['ID'],
+            'title'     => $post['post_title'],
+            'postType'  => $post['post_type'],
+            'usageType' => 'thumbnail',
+        ];
+    }
+
+    // 2) 본문 내 이미지 URL로 사용 중인 글 검색
+    $attachment_url = wp_get_attachment_url($attachment_id);
+    if ($attachment_url) {
+        // URL에서 도메인 부분 제거하여 상대 경로로 검색 (http/https 모두 매칭)
+        $parsed = parse_url($attachment_url);
+        $path_part = isset($parsed['path']) ? $parsed['path'] : '';
+
+        if ($path_part) {
+            $content_posts = $wpdb->get_results(
+                $wpdb->prepare(
+                    "SELECT ID, post_title, post_type
+                     FROM {$wpdb->posts}
+                     WHERE post_content LIKE %s
+                       AND post_type IN ('animal','project','review','support','post','page')
+                       AND post_status IN ('publish','draft','pending','private')",
+                    '%' . $wpdb->esc_like($path_part) . '%'
+                ),
+                ARRAY_A
+            );
+
+            foreach ($content_posts as $post) {
+                // 중복 제거 (이미 thumbnail로 등록된 것 제외)
+                $already = false;
+                foreach ($usage as $u) {
+                    if ($u['postId'] === (int) $post['ID']) {
+                        $already = true;
+                        break;
+                    }
+                }
+                if (!$already) {
+                    $usage[] = [
+                        'postId'    => (int) $post['ID'],
+                        'title'     => $post['post_title'],
+                        'postType'  => $post['post_type'],
+                        'usageType' => 'content',
+                    ];
+                }
+            }
+        }
+    }
+
+    // 3) ACF 필드(image 타입)에서 사용 중인지 검색
+    $acf_posts = $wpdb->get_results(
+        $wpdb->prepare(
+            "SELECT pm.post_id, p.post_title, p.post_type
+             FROM {$wpdb->postmeta} pm
+             JOIN {$wpdb->posts} p ON pm.post_id = p.ID
+             WHERE pm.meta_value = %s
+               AND pm.meta_key NOT LIKE '\_%%'
+               AND p.post_type IN ('animal','project','review','support','post','page')
+               AND p.post_status IN ('publish','draft','pending','private')",
+            $attachment_id
+        ),
+        ARRAY_A
+    );
+
+    foreach ($acf_posts as $post) {
+        $already = false;
+        foreach ($usage as $u) {
+            if ($u['postId'] === (int) $post['post_id']) {
+                $already = true;
+                break;
+            }
+        }
+        if (!$already) {
+            $usage[] = [
+                'postId'    => (int) $post['post_id'],
+                'title'     => $post['post_title'],
+                'postType'  => $post['post_type'],
+                'usageType' => 'acf_field',
+            ];
+        }
+    }
+
+    wp_send_json_success([
+        'attachmentId' => $attachment_id,
+        'usageCount'   => count($usage),
+        'usage'        => $usage,
+    ]);
+}
+
+// ==========================================
+// 15. 미디어 사용 여부 벌크 체크 AJAX 핸들러
+// ==========================================
+add_action('wp_ajax_rehoming_check_media_usage_bulk', 'rehoming_handle_check_media_usage_bulk');
+add_action('wp_ajax_nopriv_rehoming_check_media_usage_bulk', 'rehoming_handle_check_media_usage_bulk');
+
+function rehoming_handle_check_media_usage_bulk() {
+    header('Access-Control-Allow-Origin: *');
+    header('Access-Control-Allow-Methods: POST, OPTIONS');
+    header('Content-Type: application/json');
+
+    if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+        http_response_code(200);
+        exit;
+    }
+
+    $token = isset($_POST['token']) ? sanitize_text_field($_POST['token']) : '';
+    if (empty($token)) {
+        wp_send_json_error(['message' => '토큰이 필요합니다.']);
+    }
+
+    try {
+        $decoded = \WPGraphQL\JWT_Authentication\Auth::validate_token($token);
+        if (is_wp_error($decoded) || !isset($decoded->data->user->id)) {
+            wp_send_json_error(['message' => '유효하지 않은 토큰입니다.']);
+        }
+        wp_set_current_user($decoded->data->user->id);
+    } catch (\Exception $e) {
+        wp_send_json_error(['message' => '토큰 검증 오류']);
+    }
+
+    $ids_raw = isset($_POST['attachment_ids']) ? sanitize_text_field($_POST['attachment_ids']) : '';
+    if (empty($ids_raw)) {
+        wp_send_json_error(['message' => 'attachment_ids가 필요합니다.']);
+    }
+
+    $ids = array_map('intval', explode(',', $ids_raw));
+    $ids = array_filter($ids, function($id) { return $id > 0; });
+    if (empty($ids)) {
+        wp_send_json_success(['usage' => []]);
+    }
+
+    global $wpdb;
+    $result = [];
+
+    // 1) 대표이미지로 사용 중인 ID 수집
+    $placeholders = implode(',', array_fill(0, count($ids), '%s'));
+    $thumb_query = $wpdb->prepare(
+        "SELECT DISTINCT meta_value AS attachment_id
+         FROM {$wpdb->postmeta} pm
+         JOIN {$wpdb->posts} p ON pm.post_id = p.ID
+         WHERE pm.meta_key = '_thumbnail_id'
+           AND pm.meta_value IN ($placeholders)
+           AND p.post_status IN ('publish','draft','pending','private')",
+        ...$ids
+    );
+    $thumb_ids = $wpdb->get_col($thumb_query);
+    foreach ($thumb_ids as $tid) {
+        $result[(int)$tid] = true;
+    }
+
+    // 2) 본문 내 URL로 사용 중인 ID 수집
+    $remaining = array_diff($ids, array_map('intval', $thumb_ids));
+    if (!empty($remaining)) {
+        foreach ($remaining as $att_id) {
+            if (isset($result[$att_id])) continue;
+            $url = wp_get_attachment_url($att_id);
+            if (!$url) continue;
+            $parsed = parse_url($url);
+            $path_part = isset($parsed['path']) ? $parsed['path'] : '';
+            if (!$path_part) continue;
+
+            $found = $wpdb->get_var(
+                $wpdb->prepare(
+                    "SELECT COUNT(*) FROM {$wpdb->posts}
+                     WHERE post_content LIKE %s
+                       AND post_type IN ('animal','project','review','support','post','page')
+                       AND post_status IN ('publish','draft','pending','private')
+                     LIMIT 1",
+                    '%' . $wpdb->esc_like($path_part) . '%'
+                )
+            );
+            if ((int)$found > 0) {
+                $result[$att_id] = true;
+            }
+        }
+    }
+
+    // 3) ACF 필드에서 사용 중인 ID 수집
+    $remaining2 = array_diff($ids, array_keys($result));
+    if (!empty($remaining2)) {
+        $placeholders2 = implode(',', array_fill(0, count($remaining2), '%s'));
+        $acf_query = $wpdb->prepare(
+            "SELECT DISTINCT pm.meta_value AS attachment_id
+             FROM {$wpdb->postmeta} pm
+             JOIN {$wpdb->posts} p ON pm.post_id = p.ID
+             WHERE pm.meta_value IN ($placeholders2)
+               AND pm.meta_key NOT LIKE '\_%%'
+               AND p.post_type IN ('animal','project','review','support','post','page')
+               AND p.post_status IN ('publish','draft','pending','private')",
+            ...$remaining2
+        );
+        $acf_ids = $wpdb->get_col($acf_query);
+        foreach ($acf_ids as $aid) {
+            $result[(int)$aid] = true;
+        }
+    }
+
+    // 사용 중인 ID 목록만 반환
+    wp_send_json_success([
+        'usedIds' => array_map('intval', array_keys($result)),
+    ]);
+}

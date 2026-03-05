@@ -9,6 +9,7 @@ import {
   MessageSquare,
   Activity,
   HeartHandshake,
+  ImageIcon,
   ChevronDown,
   LogOut,
 } from 'lucide-react';
@@ -110,6 +111,11 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({ isOpen, onClose }) =
         { title: '게시글 목록', path: '/admin/support' },
         { title: '게시글 작성', path: '/admin/support/new' },
       ],
+    },
+    {
+      title: '미디어 관리',
+      path: '/admin/media',
+      icon: <ImageIcon className="h-5 w-5" />,
     },
   ];
 

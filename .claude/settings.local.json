@@ -2,7 +2,11 @@
   "permissions": {
     "allow": [
       "Bash(npx next:*)",
-      "Bash(curl:*)"
+      "Bash(curl:*)",
+      "Bash(npx tsc:*)",
+      "Bash(npm install:*)",
+      "Bash(ls:*)",
+      "Bash(npx shadcn@latest:*)"
     ]
   }
 }

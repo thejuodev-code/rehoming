@@ -670,6 +670,28 @@ export interface DeleteSupportPostData {
 }
 
 // ==========================================
+// Media Mutations
+// ==========================================
+
+export const DELETE_MEDIA_ITEM = gql`
+  mutation DeleteMediaItem($id: ID!) {
+    deleteMediaItem(input: { id: $id, forceDelete: true }) {
+      deletedId
+    }
+  }
+`;
+
+export interface DeleteMediaItemVariables {
+  id: string;
+}
+
+export interface DeleteMediaItemData {
+  deleteMediaItem: {
+    deletedId: string;
+  };
+}
+
+// ==========================================
 // Authentication Types
 // ==========================================
 
